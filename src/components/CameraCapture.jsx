@@ -231,7 +231,7 @@ const CameraCapture = ({ selectedFrame, photoSlots, photos: initialPhotos, onPho
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: 'clamp(1.5rem, 5vw, 3rem) clamp(1rem, 4vw, 2rem)',
+      padding: 'clamp(1.5rem, 3vw, 3rem) clamp(1rem, 2vw, 2rem)',
       position: 'relative',
       overflowX: 'hidden',
     }}>
@@ -257,15 +257,15 @@ const CameraCapture = ({ selectedFrame, photoSlots, photos: initialPhotos, onPho
         .thumb.retaking { border-color: #C77DFF; box-shadow: 0 0 0 3px rgba(199,125,255,0.2); }
         .blob { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; }
         .grad-text { background: linear-gradient(135deg, #FF8A80 0%, #FF6B9D 40%, #C77DFF 75%, #7B9CFF 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .video-wrapper { width: 100%; max-width: 640px; }
+        .video-wrapper { width: 100%; max-width: 740px; }
         @media (max-width: 640px) { .video-wrapper { max-width: 100%; } }
-        @media (max-height: 700px) { .video-wrapper { max-width: 420px; } }
+        @media (max-height: 700px) { .video-wrapper { max-width: 520px; } }
       `}</style>
 
       <div className="blob" style={{ width: 360, height: 360, background: 'rgba(255,194,194,0.3)', top: '-8%', right: '0%', filter: 'blur(75px)' }} />
       <div className="blob" style={{ width: 240, height: 240, background: 'rgba(196,179,255,0.22)', bottom: '5%', left: '2%', filter: 'blur(60px)' }} />
 
-      <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: '720px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'clamp(1.25rem, 4vw, 2rem)' }}>
+      <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: '720px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'clamp(1.25rem, 1vw, 2rem)' }}>
 
         {/* Header */}
         <div style={{ textAlign: 'center' }}>
@@ -289,7 +289,7 @@ const CameraCapture = ({ selectedFrame, photoSlots, photos: initialPhotos, onPho
               <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: 'clamp(1rem, 3vw, 1.5rem)', fontWeight: 400, color: '#C8C0B8', fontStyle: 'normal' }}> / {totalSlots}</span></>
             )}
           </h2>
-          <p style={{ color: '#B0A89A', fontSize: 'clamp(0.8rem, 2vw, 0.9rem)', fontWeight: 400 }}>
+          <p style={{ color: '#B0A89A', fontSize: 'clamp(0.8rem, 1vw, 0.9rem)', fontWeight: 400 }}>
             {countdown ? 'get ready...' : 'strike a pose'}
           </p>
         </div>
@@ -321,7 +321,7 @@ const CameraCapture = ({ selectedFrame, photoSlots, photos: initialPhotos, onPho
             const isActive = i === shootingIndex && retakingIndex === null;
             const isRetaking = i === retakingIndex;
             return (
-              <div key={i} className={`thumb${isFilled ? ' filled' : ''}${isActive ? ' active' : ''}${isRetaking ? ' retaking' : ''}`} style={{ width: 60, height: 60, position: 'relative' }}>
+              <div key={i} className={`thumb${isFilled ? ' filled' : ''}${isActive ? ' active' : ''}${isRetaking ? ' retaking' : ''}`} style={{ width: 50, height: 50, position: 'relative' }}>
                 {isFilled ? (
                   <>
                     <img src={photos[i]} alt={`Photo ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', opacity: isRetaking ? 0.4 : 1 }} />

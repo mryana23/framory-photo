@@ -3,65 +3,66 @@ export const themes = [
     id: 'ticket',
     name: 'TICKET',
     emoji: '🎫',
-    description: 'memory, experience, concert',
+    description: 'core memories unlocked, concert high, archive your best nights',
     frames: [
-      { id: 't1', name: 'Concert Ticket', slots: 4, frameUrl: '/frames/Ticket to a Night.png' },
-      { id: 't2', name: 'Movie Ticket', slots: 4, frameUrl: '/frames/Ticket Movie.png' },
-      { id: 't3', name: 'Boarding Pass', slots: 4, frameUrl: '/frames/Ticket Girls.png' },
-      { id: 't4', name: 'Theme Park', slots: 4, frameUrl: '/frames/Ticket Fashion.png' }
+      { id: 't1', name: 'Midnight Tour', slots: 4, frameUrl: '/frames/ticket1.png' },
+      { id: 't2', name: 'Cine Date Stub', slots: 4, frameUrl: '/frames/ticket2.png' },
+      { id: 't3', name: 'Runway Access', slots: 4, frameUrl: '/frames/ticket3.png' },
+      { id: 't4', name: 'VIP Love Pass', slots: 4, frameUrl: '/frames/ticket4.png' },
+      { id: 't5', name: 'Dreamland Entry', slots: 4, frameUrl: '/frames/ticket5.png' }
     ]
   },
+  
   {
     id: 'denim',
-    name: 'Denim',
+    name: 'DENIM ERA',
     emoji: '🎧',
-    description: 'playlist, feelings, main character',
+    description: 'playlist-coded vibes, soft blue feelings, main character energy',
     frames: [
-      { id: 's1', name: 'Now Playing', slots: 4, frameUrl: '/frames/denim1.png' },
-      { id: 's2', name: 'Album Cover', slots: 4, frameUrl: '/frames/song-album.png' },
-      { id: 's3', name: 'Pause/Play UI', slots: 4, frameUrl: '/frames/song-pause.png' }
+      { id: 'dn1', name: 'Soft Denim', slots: 4, frameUrl: '/frames/denim1.png' },
+      { id: 'dn2', name: 'Closet Mood', slots: 4, frameUrl: '/frames/denim2.png' },
+      { id: 'dn3', name: 'Blue Crush', slots: 4, frameUrl: '/frames/denim3.png' },
+      { id: 'dn4', name: 'Heart Patch', slots: 4, frameUrl: '/frames/denim4.png' },
+      { id: 'dn5', name: '2AM Camera Roll', slots: 4, frameUrl: '/frames/denim5.png' }
     ]
   },
   {
-    id: 'koran',
-    name: 'KORAN',
+    id: 'vintage',
+    name: 'VINTAGE',
+    emoji: '📷',
+    description: 'analog soul, grainy romance, timeless film dump aesthetic',
+    frames: [
+      { id: 'vt1', name: 'Old Letters', slots: 4, frameUrl: '/frames/vtg1.png' },
+      { id: 'vt2', name: 'Soft Memories', slots: 4, frameUrl: '/frames/vtg2.png' },
+      { id: 'vt3', name: 'Explorer’s Journal', slots: 4, frameUrl: '/frames/vtg3.png' },
+      { id: 'vt4', name: 'Sepia Stories', slots: 4, frameUrl: '/frames/vtg4.png' },
+      { id: 'vt5', name: 'Retro Broadcast', slots: 4, frameUrl: '/frames/vtg5.png' }
+    ]
+  },
+  {
+    id: 'newspaper',
+    name: 'NEWSPAPER',
     emoji: '📰',
-    description: 'editorial, vintage, storytelling',
+    description: 'manifesting headlines, editorial archives, front page energy',
     frames: [
-      { id: 'k1', name: 'Big Headline', slots: 4, frameUrl: '/frames/koran-headline.png' },
-      { id: 'k2', name: 'Editorial Column', slots: 4, frameUrl: '/frames/koran-editorial.png' },
-      { id: 'k3', name: 'Vintage News', slots: 4, frameUrl: '/frames/koran-vintage.png' }
+      { id: 'np1', name: 'Vintage Journaling', slots: 4, frameUrl: '/frames/news1.png' },
+      { id: 'np2', name: 'POV: Front Page', slots: 4, frameUrl: '/frames/news2.png' },
+      { id: 'np3', name: 'Editorial Core', slots: 4, frameUrl: '/frames/news3.png' },
+      { id: 'np4', name: 'Vintage Scrapbook', slots: 4, frameUrl: '/frames/news4.png' },
+      { id: 'np5', name: 'Antique Journaling', slots: 4, frameUrl: '/frames/news5.png' }
     ]
   },
   {
-    id: 'vhs',
-    name: 'VHS',
-    emoji: '📼',
-    description: 'Y2K, nostalgia',
+    id: 'y2k',
+    name: 'Y2K',
+    emoji: '💿',
+    description: 'cyber chaos, glitter overload, ultimate 2000s nostalgia',
     frames: [
-      { id: 'v1', name: 'REC Indicator', slots: 4, frameUrl: '/frames/vhs-rec.png' },
-      { id: 'v2', name: 'Timestamp', slots: 4, frameUrl: '/frames/vhs-timestamp.png' },
-      { id: 'v3', name: 'Glitch Effect', slots: 4, frameUrl: '/frames/vhs-glitch.png' }
-    ]
-  },
-  {
-    id: 'text',
-    name: 'TEXT MESSAGE',
-    emoji: '💬',
-    description: 'chat aesthetic, relatable',
-    frames: [
-      { id: 'tx1', name: 'iMessage', slots: 4, frameUrl: '/frames/text-imessage.png' },
-      { id: 'tx2', name: 'Typing...', slots: 4, frameUrl: '/frames/text-typing.png' }
-    ]
-  },
-  {
-    id: 'game',
-    name: 'GAME UI',
-    emoji: '🎮',
-    description: 'life as a game',
-    frames: [
-      { id: 'g1', name: 'HP Bar', slots: 4, frameUrl: '/frames/game-hp.png' },
-      { id: 'g2', name: 'Quest Box', slots: 4, frameUrl: '/frames/game-quest.png' }
+      { id: 'y21', name: 'Soft Cyber', slots: 4, frameUrl: '/frames/y2k1.png' },
+      { id: 'y22', name: 'Mean Girls Core', slots: 4, frameUrl: '/frames/y2k2.png' },
+      { id: 'y23', name: 'Frutiger Aero', slots: 4, frameUrl: '/frames/y2k3.png' },
+      { id: 'y24', name: 'Kidcore Digital', slots: 4, frameUrl: '/frames/y2k4.png' },
+      { id: 'y25', name: 'Lo-fi Purple', slots: 4, frameUrl: '/frames/y2k5.png' }
     ]
   }
 ];
