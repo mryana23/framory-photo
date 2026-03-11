@@ -257,7 +257,7 @@ const CameraCapture = ({ selectedFrame, photoSlots, photos: initialPhotos, onPho
         .thumb.retaking { border-color: #C77DFF; box-shadow: 0 0 0 3px rgba(199,125,255,0.2); }
         .blob { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; }
         .grad-text { background: linear-gradient(135deg, #FF8A80 0%, #FF6B9D 40%, #C77DFF 75%, #7B9CFF 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .video-wrapper { width: 100%; max-width: 740px; }
+        .video-wrapper { width: 100%; max-width: 550px!important; }
         @media (max-width: 640px) { .video-wrapper { max-width: 100%; } }
         @media (max-height: 700px) { .video-wrapper { max-width: 520px; } }
       `}</style>

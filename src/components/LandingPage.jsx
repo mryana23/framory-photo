@@ -487,7 +487,10 @@ export default function LandingPage({ onSelectTheme }) {
           padding:0.3rem 0.8rem 0.3rem 0.5rem; border-radius:100px;
           transition:all 0.22s; flex-shrink:0;
         }
-
+        /* Theme card Go button responsive */
+      .theme-chip-mobile { display: none; }
+      .theme-chip-desktop { display: inline-flex; flex-shrink: 0; }
+      
         .rev-card {
           background:#fff; border-radius:22px; padding:1.75rem;
           border:1.5px solid #EDEAE4;
@@ -526,12 +529,21 @@ export default function LandingPage({ onSelectTheme }) {
           .hero-right { display:none !important; }
           .desktop-only { display:none !important; }
         }
-        @media(max-width:600px){
-          .feat-grid  { grid-template-columns:1fr !important; }
-          .theme-grid { grid-template-columns:1fr !important; }
-          .hero-cta   { flex-direction:column !important; }
-          .hero-cta > button { width:100%; justify-content:center !important; }
-        }
+        /* Ganti yang lama */
+@media(max-width:600px){
+  .feat-grid  { grid-template-columns:1fr !important; }
+  .theme-grid { grid-template-columns:1fr !important; }
+  .hero-cta   { flex-direction:column !important; }
+  .hero-cta > button { width:100%; justify-content:center !important; }
+  
+  /* Tambah ini — paksa theme card full width di mobile */
+  .theme-card { width: 100% !important; max-width: 100% !important; }
+  .theme-grid > * { grid-column: 1 / -1 !important; }
+  
+  /* Reset centering trick yang bikin card kecil di mobile */
+  .theme-grid > *:last-child:nth-child(3n - 1) { grid-column-end: auto !important; }
+  .theme-grid > *:last-child:nth-child(3n - 2) { grid-column: auto !important; }
+}
         .mobile-btn { display:none !important; }
         @media(max-width:900px){ .mobile-btn { display:flex !important; } }
       `}</style>
@@ -1563,12 +1575,13 @@ export default function LandingPage({ onSelectTheme }) {
                       style={{
                         padding: "1.1rem 1.2rem",
                         display: "flex",
-                        alignItems: "center",
+                        alignItems: "flex-start",
                         justifyContent: "space-between",
+                        gap: "0.5rem",
                         background: "#fff",
                       }}
                     >
-                      <div style={{ textAlign: "left" }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
                         <h3
                           style={{
                             fontFamily: "'Nunito',sans-serif",
@@ -1586,13 +1599,24 @@ export default function LandingPage({ onSelectTheme }) {
                               color: "#C0BAB2",
                               fontSize: "0.72rem",
                               fontWeight: 300,
+                              lineHeight: 1.5,
                             }}
                           >
                             {theme.description}
                           </p>
                         )}
+                        {/* Go button — HANYA muncul di mobile (di bawah desc) */}
+                        <div
+                          className="cta-chip theme-chip-mobile"
+                          style={{ marginTop: "0.6rem" }}
+                        >
+                          <ArrowRight size={11} />
+                          Go
+                        </div>
                       </div>
-                      <div className="cta-chip">
+
+                      {/* Go button — HANYA muncul di desktop (di samping) */}
+                      <div className="cta-chip theme-chip-desktop">
                         <ArrowRight size={11} />
                         Go
                       </div>

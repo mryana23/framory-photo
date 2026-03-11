@@ -17,7 +17,19 @@ const ResultPreview = ({ frameImage, photos, photoSlots, onRetake }) => {
     return `framory-${theme}-${frame}-${stamp}.png`;
   };
 
-  // ── Shared draw logic — dipakai oleh preview, download, dan share ──────────
+  const getCaption = () => {
+    const captions = [
+      `captured a whole vibe ✨ made with framory → https://framory-photo.vercel.app/`,
+      `main character era 🎬 photo booth moment via framory → https://framory-photo.vercel.app/`,
+      `this is my roman empire 🎞️ make yours at framory → https://framory-photo.vercel.app/`,
+      `living, laughing, framory-ing 📸 → https://framory-photo.vercel.app/`,
+      `soft life & good lighting ✨ try framory → https://framory-photo.vercel.app/`,
+      `not me making a photo booth strip at 2am 🌙 framory → https://framory-photo.vercel.app/`,
+      `hot girl/boy/bestie activity 📷 framory → https://framory-photo.vercel.app/`,
+    ];
+    return captions[Math.floor(Math.random() * captions.length)];
+  };
+
   const drawToCanvas = async (canvas) => {
     const ctx = canvas.getContext('2d');
 
@@ -67,7 +79,6 @@ const ResultPreview = ({ frameImage, photos, photoSlots, onRetake }) => {
     ctx.drawImage(frame, 0, 0);
   };
 
-  // ── Preview on mount ───────────────────────────────────────────────────────
   useEffect(() => {
     const run = async () => {
       if (!frameImage || !canvasRef.current || photos.length === 0) return;
@@ -76,7 +87,6 @@ const ResultPreview = ({ frameImage, photos, photoSlots, onRetake }) => {
     run();
   }, [frameImage, photos, photoSlots]);
 
-  // ── Download ───────────────────────────────────────────────────────────────
   const downloadResult = async () => {
     setDownloading(true);
     try {
@@ -95,9 +105,9 @@ const ResultPreview = ({ frameImage, photos, photoSlots, onRetake }) => {
     }
   };
 
-  // ── Share ──────────────────────────────────────────────────────────────────
   const shareResult = async () => {
     setSharing(true);
+    const caption = getCaption();
     try {
       const canvas = document.createElement('canvas');
       await drawToCanvas(canvas);
@@ -109,13 +119,13 @@ const ResultPreview = ({ frameImage, photos, photoSlots, onRetake }) => {
         await navigator.share({
           files: [file],
           title: 'My Framory Strip',
-          text: 'Made with framory ✨',
+          text: caption,
         });
       } else if (navigator.share) {
         await navigator.share({
           title: 'My Framory Strip',
-          text: 'Made with framory ✨',
-          url: window.location.href,
+          text: caption,
+          url: 'https://framory-photo.vercel.app/',
         });
       } else {
         alert('Sharing not supported on this browser. Try downloading instead!');
@@ -225,7 +235,6 @@ const ResultPreview = ({ frameImage, photos, photoSlots, onRetake }) => {
         display: 'flex', flexDirection: 'column', alignItems: 'center',
         gap: 'clamp(1.25rem, 4vw, 2rem)',
       }}>
-        {/* Header */}
         <div style={{ textAlign: 'center' }} className="appear">
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: '0.45rem',
@@ -256,7 +265,6 @@ const ResultPreview = ({ frameImage, photos, photoSlots, onRetake }) => {
           </p>
         </div>
 
-        {/* Canvas preview */}
         <div className="canvas-card appear">
           <canvas
             ref={canvasRef}
@@ -267,7 +275,6 @@ const ResultPreview = ({ frameImage, photos, photoSlots, onRetake }) => {
           />
         </div>
 
-        {/* Action buttons */}
         <div className="action-row appear-delay">
           <button
             className={`btn-download${downloaded ? ' success' : ''}`}

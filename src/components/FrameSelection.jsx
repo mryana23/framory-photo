@@ -81,6 +81,13 @@ const FrameSelection = ({ selectedTheme, onBack, onSelectFrame }) => {
           color: #7C5CC8;
         }
 
+        .frame-chip-mobile { display: none; }
+        .frame-chip-desktop { display: inline-flex; }
+
+        @media (max-width: 600px) {
+          .frame-chip-mobile { display: inline-flex; }
+          .frame-chip-desktop { display: none; }
+        }
 
         .badge {
           display: inline-flex;
@@ -267,24 +274,20 @@ const FrameSelection = ({ selectedTheme, onBack, onSelectFrame }) => {
                 </div>
 
                 {/* Card footer */}
-                <div style={{ padding: '1rem 1.1rem', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div>
+                <div style={{ padding: '1rem 1.1rem', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
                     <h3 style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 800, fontSize: '0.88rem', color: '#1a1a1a', marginBottom: '0.15rem' }}>
                       {frame.name}
                     </h3>
+                    {/* Pick — mobile only, di bawah name */}
+                    <div className={`frame-chip frame-chip-mobile${isLoading ? ' loading' : ''}`} style={{ marginTop: '0.5rem' }}>
+                      {isLoading ? <><Loader2 size={10} className="spin" />loading</> : <><ArrowLeft size={10} style={{ transform: 'rotate(180deg)' }} />pick</>}
+                    </div>
                   </div>
-                  <div className={`frame-chip${isLoading ? ' loading' : ''}`}>
-                    {isLoading ? (
-                      <>
-                        <Loader2 size={10} className="spin" />
-                        loading
-                      </>
-                    ) : (
-                      <>
-                        <ArrowLeft size={10} style={{ transform: 'rotate(180deg)' }} />
-                        pick
-                      </>
-                    )}
+
+                  {/* Pick — desktop only, di samping */}
+                  <div className={`frame-chip frame-chip-desktop${isLoading ? ' loading' : ''}`}>
+                    {isLoading ? <><Loader2 size={10} className="spin" />loading</> : <><ArrowLeft size={10} style={{ transform: 'rotate(180deg)' }} />pick</>}
                   </div>
                 </div>
               </button>
