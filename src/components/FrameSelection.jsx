@@ -279,13 +279,13 @@ const FrameSelection = ({ selectedTheme, onBack, onSelectFrame }) => {
                     <h3 style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 800, fontSize: '0.88rem', color: '#1a1a1a', marginBottom: '0.15rem' }}>
                       {frame.name}
                     </h3>
-                    {/* Pick — mobile only, di bawah name */}
+                    {/* Pick — mobile only*/}
                     <div className={`frame-chip frame-chip-mobile${isLoading ? ' loading' : ''}`} style={{ marginTop: '0.5rem' }}>
                       {isLoading ? <><Loader2 size={10} className="spin" />loading</> : <><ArrowLeft size={10} style={{ transform: 'rotate(180deg)' }} />pick</>}
                     </div>
                   </div>
 
-                  {/* Pick — desktop only, di samping */}
+                  {/* Pick — desktop only */}
                   <div className={`frame-chip frame-chip-desktop${isLoading ? ' loading' : ''}`}>
                     {isLoading ? <><Loader2 size={10} className="spin" />loading</> : <><ArrowLeft size={10} style={{ transform: 'rotate(180deg)' }} />pick</>}
                   </div>
