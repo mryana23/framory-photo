@@ -34,10 +34,6 @@ const AppRoutes = () => {
   };
 
   const handleRetake = () => {
-    // ⚠️ Jangan setPhotos([]) di sini dulu!
-    // Kalau photos di-clear sebelum navigate, guard /result langsung
-    // ngedeteksi photos.length === 0 dan redirect ke "/" duluan.
-    // Photos akan di-reset oleh CameraCapture saat mulai sesi baru.
     sessionStorage.removeItem('photos');
     navigate('/camera');
   };
@@ -54,19 +50,12 @@ const AppRoutes = () => {
   return (
     <BoothContext.Provider value={ctxValue}>
       <div style={{ minHeight: '100vh' }}>
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <LandingPage
+        <LandingPage
                 onSelectTheme={(theme) => {
                   setSelectedTheme(theme);
                   saveSession('selectedTheme', theme);
                   navigate('/frame');
                 }}
-              />
-            }
-          />
 
           <Route
             path="/frame"
