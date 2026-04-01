@@ -1,36 +1,16 @@
-📸 Framory: Modern Web-Based Photobooth
-Framory is a high-performance Single Page Application (SPA) designed to bring the classic photobooth experience to the browser. Built with React 19 and Vite, it features real-time webcam integration, dynamic theme selection, and instant frame composition.
+# React + Vite
 
-🚀 Key Features
-Seamless SPA Experience: Zero-refresh transitions using React Router 7 for a native-app feel.
-Webcam API Integration: Automated capture sequences with real-time countdowns.
-Dynamic Theming: Filterable frame catalogs based on user-selected aesthetic themes.
-Persistence: State management backed by SessionStorage to prevent data loss on refresh.
-Responsive UI: Optimized for various screen sizes using modern CSS principles.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-🏗️ Architecture & Component Roles
-I designed this application with a modular "Theater" architecture to ensure scalability and clean separation of concerns:
-1. The Core (Infrastructure)
-main.jsx: The entry point that bootstraps the React environment into the DOM.
-App.jsx (The Orchestrator): Manages global state, routing logic, and provides the BoothContext for efficient data flow across the component tree.
-2. The Components (The Actors)
-LandingPage.jsx: Manages entry intent and theme initialization.
-FrameSelection.jsx: A dynamic catalog that handles complex filtering of frame assets.
-CameraCapture.jsx: The technical core—interfaces with browser media devices, manages timers, and processes raw image data.
-ResultPreview.jsx: Handles the final image synthesis, merging captures with selected frames for download.
+Currently, two official plugins are available:
 
-🛠️ Technical Stack
-React 19: Leveraging the latest hooks and rendering performance.
-Vite: For an optimized build pipeline and near-instant HMR.
-React Router 7: Implementing declarative, client-side routing.
-Lucide React: For consistent, lightweight iconography.
-⚙️ Development Setup
-1. Clone the repository:
-git clone https://github.com/mryana23/framory-photo
-2. Install dependencies:
-npm install
-3. Launch the development server:
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-npm run dev
-💡 Why this approach?
-By opting for an SPA architecture, I eliminated the "white-screen" flash between steps. This ensures the user stays immersed in the experience—crucial for a creative tool like a photobooth.
+## React Compiler
+
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+
+## Expanding the ESLint configuration
+
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.

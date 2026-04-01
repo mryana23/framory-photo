@@ -50,12 +50,19 @@ const AppRoutes = () => {
   return (
     <BoothContext.Provider value={ctxValue}>
       <div style={{ minHeight: '100vh' }}>
-        <LandingPage
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <LandingPage
                 onSelectTheme={(theme) => {
                   setSelectedTheme(theme);
                   saveSession('selectedTheme', theme);
                   navigate('/frame');
                 }}
+              />
+            }
+          />
 
           <Route
             path="/frame"
