@@ -19,8 +19,6 @@ export const detectTransparentAreas = (imageData) => {
         const W = canvas.width;
         const H = canvas.height;
 
-        // Step 1: transparency map per baris
-        // alpha < 200 = transparan (threshold tinggi lebih agresif deteksi tepi)
         const ALPHA_THRESHOLD = 200;
         const rowRanges = [];
 
@@ -36,8 +34,6 @@ export const detectTransparentAreas = (imageData) => {
           rowRanges.push(minX !== null ? { minX, maxX } : null);
         }
 
-        // Step 2: cluster baris jadi slot groups
-        // GAP_THRESHOLD besar = toleransi border tebal antar slot
         const GAP_THRESHOLD = 20;
         const slots = [];
         let slotStart = null;
@@ -67,11 +63,37 @@ export const detectTransparentAreas = (imageData) => {
           return;
         }
 
-        // Step 3: bounding box per slot + expand proporsional
-        // EXPAND_RATIO = persen dari dimensi slot, jadi berlaku untuk semua ukuran frame
-        const EXPAND_RATIO = 0.015; // 1.5%
+        function maybeSplitSlot(slot) {
+          const slotH = slot.endY - slot.startY;
+          const widths = rowRanges.slice(slot.startY, slot.endY)
+            .filter(Boolean).map(r => r.maxX - r.minX);
+          if (widths.length === 0) return [slot];
+          const slotW = Math.max(...widths);
 
-        const areas = slots.map(slot => {
+          if (slotH < slotW * 1.3) return [slot];
+
+          let minWidth = Infinity, splitY = -1;
+          for (let y = slot.startY + 10; y < slot.endY - 10; y++) {
+            const w = rowRanges[y] ? rowRanges[y].maxX - rowRanges[y].minX : 0;
+            if (w < minWidth) {
+              minWidth = w;
+              splitY = y;
+            }
+          }
+
+          if (splitY === -1 || minWidth > slotW * 0.5) return [slot];
+
+          return [
+            { startY: slot.startY, endY: splitY },
+            { startY: splitY + 1, endY: slot.endY }
+          ];
+        }
+
+        const splitSlots = slots.flatMap(maybeSplitSlot);
+
+        const EXPAND_RATIO = 0.015;
+
+        const areas = splitSlots.map(slot => {
           let minX = Infinity, maxX = 0;
 
           for (let y = slot.startY; y <= slot.endY; y++) {

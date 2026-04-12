@@ -144,7 +144,6 @@ const steps = [
   },
 ];
 
-// Tambah helper ini di luar component
 const themeVisuals = {
   ticket: {
     bg: "linear-gradient(135deg, #ffe0ec 0%, #ffc2d4 50%, #ffb3c6 100%)",
@@ -336,7 +335,16 @@ export default function LandingPage({ onSelectTheme }) {
   const [activeStep, setActiveStep] = useState(0);
   const [hoveredTheme, setHoveredTheme] = useState(null);
   const rafRef = useRef(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
 
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 40);
     window.addEventListener("scroll", fn, { passive: true });
@@ -739,9 +747,11 @@ export default function LandingPage({ onSelectTheme }) {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "1fr auto",
-              gap: "3rem",
-              alignItems: "center",
+              gridTemplateColumns: isMobile ? "1fr" : "1fr auto",
+              gridTemplateAreas: isMobile ? "'content'" : "'content frame'",
+              rowGap: "1rem",
+              columnGap: isMobile ? "0" : "3rem",
+              justifyItems: "left",
             }}
           >
             {/* Left */}
@@ -936,6 +946,7 @@ export default function LandingPage({ onSelectTheme }) {
                 flexDirection: "column",
                 alignItems: "center",
                 gap: "0.5rem",
+                alignSelf: "center",
               }}
             >
               <div
@@ -1535,7 +1546,7 @@ export default function LandingPage({ onSelectTheme }) {
                               height: "3.75rem",
                               borderRadius: "8px 8px 0 0",
                               background: swatch.bg,
-                              backgroundImage: swatch.pattern, // ← pattern di atas warna
+                              backgroundImage: swatch.pattern, 
                               border: "1.5px solid rgba(255,255,255,0.45)",
                               boxShadow: "inset 0 1px 0 rgba(255,255,255,0.55)",
                               transition: `transform 0.3s ${j * 0.04}s ease`,

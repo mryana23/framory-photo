@@ -50,29 +50,35 @@ const ResultPreview = ({ frameImage, photos, photoSlots, onRetake }) => {
       const slot = photoSlots[i];
       if (!slot) continue;
 
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0); 
+
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
 
-      const OVERLAP = 6;
-      const clipX = Math.max(0, slot.x - OVERLAP);
-      const clipY = Math.max(0, slot.y - OVERLAP);
-      const clipW = Math.min(canvas.width - clipX, slot.width + OVERLAP * 2);
-      const clipH = Math.min(canvas.height - clipY, slot.height + OVERLAP * 2);
+      const clipX = slot.x;
+      const clipY = slot.y;
+      const clipW = slot.width;
+      const clipH = slot.height;
 
       const scaleX = clipW / img.width;
       const scaleY = clipH / img.height;
       const scale = Math.max(scaleX, scaleY);
 
-      const drawWidth = img.width * scale;
-      const drawHeight = img.height * scale;
-      const drawX = clipX + (clipW - drawWidth) / 2;
-      const drawY = clipY + (clipH - drawHeight) / 2;
+      const scaledW = img.width * scale;
+      const scaledH = img.height * scale;
 
-      ctx.save();
+      const srcX = (img.width - clipW / scale) / 2;
+      const srcY = (img.height - clipH / scale) / 2;
+      const srcW = clipW / scale;
+      const srcH = clipH / scale;
+
       ctx.beginPath();
       ctx.rect(clipX, clipY, clipW, clipH);
       ctx.clip();
-      ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
+
+      ctx.drawImage(img, srcX, srcY, srcW, srcH, clipX, clipY, clipW, clipH);
+
       ctx.restore();
     }
 
