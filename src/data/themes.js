@@ -64,5 +64,18 @@ export const themes = [
       { id: 'y24', name: 'Kidcore Digital', slots: 4, frameUrl: '/frames/y2k4.png' },
       { id: 'y25', name: 'Lo-fi Purple', slots: 4, frameUrl: '/frames/y2k5.png' }
     ]
+  },
+  {
+    id: 'simple',
+    name: 'Simple',
+    emoji: '💿',
+    description: 'cyber chaos, glitter overload, ultimate 2000s nostalgia',
+    frames: [
+      { id: 's1', name: 'Soft Cyber', slots: 4, frameUrl: '/frames/simple1.png' },
+      { id: 's2', name: 'Mean Girls Core', slots: 4, frameUrl: '/frames/simple2.png' },
+      { id: 's3', name: 'Frutiger Aero', slots: 4, frameUrl: '/frames/simple3.png' },
+      { id: 's4', name: 'Kidcore Digital', slots: 4, frameUrl: '/frames/simple4.png' },
+      { id: 's5', name: 'Lo-fi Purple', slots: 4, frameUrl: '/frames/simple5.png' }
+    ]
   }
 ];

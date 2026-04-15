@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Camera, CheckCircle2, RotateCcw, ArrowRight, FlipHorizontal } from 'lucide-react';
+import { Camera, CheckCircle2, RotateCcw, ArrowRight } from 'lucide-react';
 
 const FILTERS = [
   { name: 'none',    label: 'original', css: 'none',                                                                          svgId: null,     overlay: null },
@@ -14,6 +14,7 @@ const FILTERS = [
   { name: 'drama',   label: 'drama',    css: 'contrast(1.4) saturate(1.2) brightness(0.9)',                                   svgId: null,     overlay: null },
 ];
 
+// Hidden SVG filter definitions for soft/glow skin-smoothing overlay
 const SVG_FILTERS = `
 <svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden">
   <defs>
@@ -39,17 +40,14 @@ const CameraCapture = ({ selectedFrame, photoSlots, photos: initialPhotos, onPho
   const [reviewMode, setReviewMode] = useState(false);
   const [retakingIndex, setRetakingIndex] = useState(null);
   const [selectedFilter, setSelectedFilter] = useState('none');
-  const [facingMode, setFacingMode] = useState('user');
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
 
-  const startCamera = async (mode) => {
-    const activeMode = mode ?? facingMode;
+  const startCamera = async () => {
     try {
-      if (stream) stream.getTracks().forEach(track => track.stop());
       const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: activeMode, width: 1280, height: 720 }
+        video: { facingMode: 'user', width: 1280, height: 720 }
       });
       setStream(mediaStream);
       if (videoRef.current) videoRef.current.srcObject = mediaStream;
@@ -63,12 +61,6 @@ const CameraCapture = ({ selectedFrame, photoSlots, photos: initialPhotos, onPho
       stream.getTracks().forEach(track => track.stop());
       setStream(null);
     }
-  };
-
-  const handleFlipCamera = () => {
-    const newMode = facingMode === 'user' ? 'environment' : 'user';
-    setFacingMode(newMode);
-    startCamera(newMode);
   };
 
   const handleTakePhoto = () => {
@@ -99,36 +91,28 @@ const CameraCapture = ({ selectedFrame, photoSlots, photos: initialPhotos, onPho
     context.clearRect(0, 0, canvas.width, canvas.height);
 
     const activeFilter = FILTERS.find(f => f.name === selectedFilter);
-    const isMirrored = facingMode === 'user';
 
-    // Draw video with base CSS filter
+    // Draw mirrored video with base CSS filter
     context.filter = activeFilter?.css !== 'none' ? activeFilter.css : 'none';
-    if (isMirrored) {
-      context.save();
-      context.scale(-1, 1);
-      context.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
-      context.restore();
-    } else {
-      context.drawImage(video, 0, 0, canvas.width, canvas.height);
-    }
+    context.save();
+    context.scale(-1, 1);
+    context.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
+    context.restore();
     context.filter = 'none';
 
     // For soft/glow: composite a blurred layer on top to simulate skin-smoothing
     if (activeFilter?.overlay) {
       const { blur, opacity } = activeFilter.overlay;
+      // Draw blurred copy onto an offscreen canvas then blend
       const offscreen = document.createElement('canvas');
       offscreen.width = canvas.width;
       offscreen.height = canvas.height;
       const offCtx = offscreen.getContext('2d');
       offCtx.filter = `blur(${blur * 2}px) ${activeFilter.css !== 'none' ? activeFilter.css : ''}`.trim();
-      if (isMirrored) {
-        offCtx.save();
-        offCtx.scale(-1, 1);
-        offCtx.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
-        offCtx.restore();
-      } else {
-        offCtx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      }
+      offCtx.save();
+      offCtx.scale(-1, 1);
+      offCtx.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
+      offCtx.restore();
       offCtx.filter = 'none';
 
       context.globalAlpha = opacity;
@@ -172,7 +156,7 @@ const CameraCapture = ({ selectedFrame, photoSlots, photos: initialPhotos, onPho
   const handleRetakePhoto = async (index) => {
     setRetakingIndex(index);
     setReviewMode(false);
-    await startCamera(facingMode);
+    await startCamera();
   };
 
   const handleConfirm = () => {
@@ -180,7 +164,7 @@ const CameraCapture = ({ selectedFrame, photoSlots, photos: initialPhotos, onPho
   };
 
   useEffect(() => {
-    startCamera(facingMode);
+    startCamera();
     return () => stopCamera();
   }, []);
 
@@ -257,6 +241,7 @@ const CameraCapture = ({ selectedFrame, photoSlots, photos: initialPhotos, onPho
                   alt={`Photo ${i + 1}`}
                   style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                 />
+                {/* Photo number badge */}
                 <div style={{
                   position: 'absolute', top: '0.6rem', left: '0.6rem',
                   width: '1.6rem', height: '1.6rem', borderRadius: '50%',
@@ -266,6 +251,7 @@ const CameraCapture = ({ selectedFrame, photoSlots, photos: initialPhotos, onPho
                 }}>
                   {i + 1}
                 </div>
+                {/* Retake button */}
                 <div style={{ position: 'absolute', bottom: '0.6rem', right: '0.6rem' }}>
                   <button className="retake-btn" onClick={() => handleRetakePhoto(i)}>
                     <RotateCcw size={11} strokeWidth={2.5} />
@@ -349,20 +335,12 @@ const CameraCapture = ({ selectedFrame, photoSlots, photos: initialPhotos, onPho
           text-transform: uppercase; color: #C8C0B8; font-weight: 400; transition: color 0.15s;
         }
         .filter-label.active { color: #1a1a1a; font-weight: 700; }
-        .flip-btn {
-          display: inline-flex; align-items: center; justify-content: center;
-          background: rgba(255,255,255,0.9); border: 1.5px solid #EDEAE4;
-          border-radius: 50%; width: 44px; height: 44px;
-          cursor: pointer; transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
-          box-shadow: 0 4px 14px rgba(0,0,0,0.08); backdrop-filter: blur(4px);
-        }
-        .flip-btn:hover { transform: scale(1.08) rotate(15deg); box-shadow: 0 8px 20px rgba(0,0,0,0.12); }
-        .flip-btn:active { transform: scale(0.95) rotate(180deg); }
       `}</style>
 
       <div className="blob" style={{ width: 360, height: 360, background: 'rgba(255,194,194,0.3)', top: '-8%', right: '0%', filter: 'blur(75px)' }} />
       <div className="blob" style={{ width: 240, height: 240, background: 'rgba(196,179,255,0.22)', bottom: '5%', left: '2%', filter: 'blur(60px)' }} />
 
+      {/* Hidden SVG filter defs for soft/glow overlay */}
       <div dangerouslySetInnerHTML={{ __html: SVG_FILTERS }} style={{ position: 'absolute', width: 0, height: 0, overflow: 'hidden' }} />
 
       <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: '700px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'clamp(0.5rem, 1vw, 1rem)' }}>
@@ -377,7 +355,7 @@ const CameraCapture = ({ selectedFrame, photoSlots, photos: initialPhotos, onPho
           }}>
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: retakingIndex !== null ? '#C77DFF' : '#CC3B2A', display: 'inline-block', flexShrink: 0 }} />
             <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.6rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#B0A89A' }}>
-              {retakingIndex !== null ? `retaking photo ${retakingIndex + 1}` : selectedFrame?.name}
+              {retakingIndex !== null ? `retaking photo ${retakingIndex + 1}` : selectedFrame.name}
             </span>
           </div>
 
@@ -412,12 +390,12 @@ const CameraCapture = ({ selectedFrame, photoSlots, photos: initialPhotos, onPho
                 width: '100%',
                 aspectRatio: '16/10',
                 objectFit: 'cover',
-                transform: facingMode === 'user' ? 'scaleX(-1)' : 'scaleX(1)',
+                transform: 'scaleX(-1)',
                 display: 'block',
                 filter: activeCssFilter,
               }}
             />
-            {/* Soft/glow smoothing overlay */}
+            {/* Soft/glow smoothing overlay — blurred copy of the video composited on top */}
             {activeFilterObj?.overlay && (
               <div style={{
                 position: 'absolute', inset: 0, zIndex: 5, pointerEvents: 'none',
@@ -428,18 +406,6 @@ const CameraCapture = ({ selectedFrame, photoSlots, photos: initialPhotos, onPho
                 borderRadius: '18px',
               }} />
             )}
-
-            {/* Flip camera button — pojok kanan atas */}
-            <button
-              className="flip-btn"
-              onClick={handleFlipCamera}
-              style={{ position: 'absolute', top: '0.75rem', right: '0.75rem', zIndex: 10 }}
-              title={facingMode === 'user' ? 'Switch to back camera' : 'Switch to front camera'}
-            >
-              <FlipHorizontal size={18} strokeWidth={2} color="#1a1a1a" />
-            </button>
-
-            {/* Corner markers */}
             {['top-left', 'top-right', 'bottom-left', 'bottom-right'].map((pos) => {
               const isTop = pos.includes('top'), isLeft = pos.includes('left');
               return (
@@ -482,25 +448,15 @@ const CameraCapture = ({ selectedFrame, photoSlots, photos: initialPhotos, onPho
           })}
         </div>
 
-        {/* Filter strip — always color swatches, never photo preview */}
+        {/* Filter strip */}
         <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', padding: '2px 0 6px', width: '100%', maxWidth: '550px', justifyContent: 'center', scrollbarWidth: 'none' }}>
           {FILTERS.map(f => (
             <div key={f.name} className="filter-item" onClick={() => setSelectedFilter(f.name)}>
               <div className={`filter-thumb-cam${selectedFilter === f.name ? ' active' : ''}`}>
-                <div style={{
-                  width: '100%', height: '100%',
-                  background:
-                    f.name === 'mono'    ? '#888'    :
-                    f.name === 'warm'    ? '#c4956a' :
-                    f.name === 'cool'    ? '#7aaed4' :
-                    f.name === 'vintage' ? '#b09070' :
-                    f.name === 'drama'   ? '#222'    :
-                    f.name === 'vivid'   ? '#e05080' :
-                    f.name === 'fade'    ? '#c8c0b8' :
-                    f.name === 'soft'    ? '#f2c4b8' :
-                    f.name === 'glow'    ? '#ffe0cc' :
-                    '#d8d2ca',
-                }} />
+                  <div style={{
+                    width: '100%', height: '100%',
+                    background: f.name === 'mono' ? '#888' : f.name === 'warm' ? '#c4956a' : f.name === 'cool' ? '#7aaed4' : f.name === 'vintage' ? '#b09070' : f.name === 'drama' ? '#222' : f.name === 'vivid' ? '#e05080' : f.name === 'fade' ? '#c8c0b8' : '#d8d2ca',
+                  }} />
               </div>
               <span className={`filter-label${selectedFilter === f.name ? ' active' : ''}`}>{f.label}</span>
             </div>

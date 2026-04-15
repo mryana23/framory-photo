@@ -2,7 +2,20 @@ import React, { useRef, useEffect, useState } from 'react';
 import { Download, Share2, RotateCcw, CheckCircle2, Home } from 'lucide-react';
 import { useBooth } from '../App';
 
-const ResultPreview = ({ frameImage, photos, photoSlots, onRetake }) => {
+const FILTERS = [
+  { name: 'none',    label: 'original', css: 'none',                                                                          overlay: null },
+  { name: 'soft',    label: 'soft',     css: 'brightness(1.05) saturate(1.1) contrast(0.92)',                                 overlay: { opacity: 0.38, blur: 1.2 } },
+  { name: 'glow',    label: 'glow',     css: 'brightness(1.12) saturate(1.25) contrast(0.88)',                                overlay: { opacity: 0.52, blur: 2.2 } },
+  { name: 'mono',    label: 'mono',     css: 'grayscale(100%)',                                                                overlay: null },
+  { name: 'fade',    label: 'fade',     css: 'brightness(1.15) saturate(0.6) contrast(0.85)',                                 overlay: null },
+  { name: 'vivid',   label: 'vivid',    css: 'saturate(1.8) contrast(1.1)',                                                   overlay: null },
+  { name: 'warm',    label: 'warm',     css: 'sepia(0.35) saturate(1.3) brightness(1.05)',                                    overlay: null },
+  { name: 'cool',    label: 'cool',     css: 'hue-rotate(200deg) saturate(0.9) brightness(1.05)',                             overlay: null },
+  { name: 'vintage', label: 'vintage',  css: 'sepia(0.6) contrast(0.85) brightness(0.95) saturate(0.8)',                     overlay: null },
+  { name: 'drama',   label: 'drama',    css: 'contrast(1.4) saturate(1.2) brightness(0.9)',                                   overlay: null },
+];
+
+const ResultPreview = ({ frameImage, photos, photoSlots, selectedFilter = 'none', onRetake }) => {
   const canvasRef = useRef(null);
   const [downloading, setDownloading] = useState(false);
   const [downloaded, setDownloaded] = useState(false);
@@ -19,13 +32,14 @@ const ResultPreview = ({ frameImage, photos, photoSlots, onRetake }) => {
 
   const getCaption = () => {
     const captions = [
-      `captured a whole vibe ✨ made with framory → https://framory-photo.vercel.app/`,
-      `main character era 🎬 photo booth moment via framory → https://framory-photo.vercel.app/`,
-      `this is my roman empire 🎞️ make yours at framory → https://framory-photo.vercel.app/`,
-      `living, laughing, framory-ing 📸 → https://framory-photo.vercel.app/`,
-      `soft life & good lighting ✨ try framory → https://framory-photo.vercel.app/`,
-      `not me making a photo booth strip at 2am 🌙 framory → https://framory-photo.vercel.app/`,
-      `hot girl/boy/bestie activity 📷 framory → https://framory-photo.vercel.app/`,
+      `📸 just did a photo booth session and i am NOT okay\n\nthe themes?? the frames?? everything is so cute\n\nmade with framory — free, no account needed\nhttps://framory-photo.vercel.app/`,
+      `🎬 main character moment fully unlocked\n\n4 shots. one vibe. zero effort.\n\nphoto booth strip via framory →\nhttps://framory-photo.vercel.app/`,
+      `ok so i found this photo booth app and it's genuinely so good 😭\n\ncurated themes, instant download, completely free\nno signup, no drama, just vibes\n\nhttps://framory-photo.vercel.app/`,
+      `✨ hot girl/boy/bestie activity of the day:\n\n1. open framory\n2. pick a theme that matches your era\n3. strike 4 poses\n4. download & post before you even blink\n\ncompletely free btw → https://framory-photo.vercel.app/`,
+      `🌙 not me at 2am doing photo booth sessions like i don't have things to do tomorrow\n\nbut framory said free and no signup so here we are\n\nhttps://framory-photo.vercel.app/`,
+      `soft life era 🌸 good lighting era ✨ framory era\n\njust made the cutest photo strip — took like 2 minutes\nfree forever, no account, instant download\n\nhttps://framory-photo.vercel.app/`,
+      `this is your sign to stop scrolling and make a photo strip 📷\n\npick a vibe → take 4 shots → download instantly\nit's free and actually so fun\n\nframory → https://framory-photo.vercel.app/`,
+      `🎞️ i am fully in my photo booth era and i have zero regrets\n\nframory has the cutest themes and it takes literally 2 minutes\nfree, no account, just good photos\n\nhttps://framory-photo.vercel.app/`,
     ];
     return captions[Math.floor(Math.random() * captions.length)];
   };
@@ -42,6 +56,10 @@ const ResultPreview = ({ frameImage, photos, photoSlots, onRetake }) => {
     canvas.height = frame.height;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    // Resolve active filter CSS string
+    const activeFilter = FILTERS.find(f => f.name === selectedFilter);
+    const filterCss = activeFilter?.css !== 'none' ? activeFilter?.css : 'none';
+
     for (let i = 0; i < Math.min(photos.length, photoSlots.length); i++) {
       const img = new Image();
       img.src = photos[i];
@@ -51,7 +69,7 @@ const ResultPreview = ({ frameImage, photos, photoSlots, onRetake }) => {
       if (!slot) continue;
 
       ctx.save();
-      ctx.setTransform(1, 0, 0, 1, 0, 0); 
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
 
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
@@ -65,9 +83,6 @@ const ResultPreview = ({ frameImage, photos, photoSlots, onRetake }) => {
       const scaleY = clipH / img.height;
       const scale = Math.max(scaleX, scaleY);
 
-      const scaledW = img.width * scale;
-      const scaledH = img.height * scale;
-
       const srcX = (img.width - clipW / scale) / 2;
       const srcY = (img.height - clipH / scale) / 2;
       const srcW = clipW / scale;
@@ -77,7 +92,28 @@ const ResultPreview = ({ frameImage, photos, photoSlots, onRetake }) => {
       ctx.rect(clipX, clipY, clipW, clipH);
       ctx.clip();
 
+      // Apply base CSS filter
+      ctx.filter = filterCss;
       ctx.drawImage(img, srcX, srcY, srcW, srcH, clipX, clipY, clipW, clipH);
+      ctx.filter = 'none';
+
+      // For soft/glow: composite a blurred layer to simulate skin-smoothing
+      if (activeFilter?.overlay) {
+        const { blur, opacity } = activeFilter.overlay;
+        const offscreen = document.createElement('canvas');
+        offscreen.width = canvas.width;
+        offscreen.height = canvas.height;
+        const offCtx = offscreen.getContext('2d');
+        offCtx.filter = `blur(${blur * 2}px) ${filterCss !== 'none' ? filterCss : ''}`.trim();
+        offCtx.drawImage(img, srcX, srcY, srcW, srcH, clipX, clipY, clipW, clipH);
+        offCtx.filter = 'none';
+
+        ctx.globalAlpha = opacity;
+        ctx.globalCompositeOperation = activeFilter.name === 'glow' ? 'screen' : 'normal';
+        ctx.drawImage(offscreen, 0, 0);
+        ctx.globalAlpha = 1;
+        ctx.globalCompositeOperation = 'source-over';
+      }
 
       ctx.restore();
     }
@@ -91,7 +127,7 @@ const ResultPreview = ({ frameImage, photos, photoSlots, onRetake }) => {
       await drawToCanvas(canvasRef.current);
     };
     run();
-  }, [frameImage, photos, photoSlots]);
+  }, [frameImage, photos, photoSlots, selectedFilter]);
 
   const downloadResult = async () => {
     setDownloading(true);

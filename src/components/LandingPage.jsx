@@ -152,7 +152,7 @@ const themeVisuals = {
         bg: "#ff6b9d",
         pattern:
           "repeating-linear-gradient(90deg, transparent, transparent 8px, rgba(255,255,255,0.4) 8px, rgba(255,255,255,0.4) 9px)",
-      }, // barcode strip
+      }, 
       {
         bg: "#ff85a1",
         pattern:
@@ -162,7 +162,7 @@ const themeVisuals = {
         bg: "#ffb3c6",
         pattern:
           "radial-gradient(circle at 0% 50%, transparent 8px, rgba(255,255,255,0.3) 8px, rgba(255,255,255,0.3) 9px, transparent 9px) 0 0 / 18px 18px",
-      }, // punch holes
+      },
       {
         bg: "#ffc2d4",
         pattern:
@@ -177,7 +177,7 @@ const themeVisuals = {
         bg: "#93c5fd",
         pattern:
           "repeating-linear-gradient(135deg, transparent, transparent 3px, rgba(255,255,255,0.25) 3px, rgba(255,255,255,0.25) 4px)",
-      }, // denim weave
+      }, 
       {
         bg: "#60a5fa",
         pattern:
@@ -202,12 +202,12 @@ const themeVisuals = {
         bg: "#c4956a",
         pattern:
           "radial-gradient(ellipse at center, rgba(255,255,255,0.15) 0%, transparent 60%), repeating-linear-gradient(0deg, transparent, transparent 10px, rgba(0,0,0,0.04) 10px, rgba(0,0,0,0.04) 11px)",
-      }, // film grain lines
+      }, 
       {
         bg: "#d4a574",
         pattern:
           "radial-gradient(circle at 20% 20%, rgba(255,255,255,0.3) 0%, transparent 40%), radial-gradient(circle at 80% 80%, rgba(0,0,0,0.1) 0%, transparent 40%)",
-      }, // vignette
+      }, 
       {
         bg: "#e8c9a0",
         pattern:
@@ -227,7 +227,7 @@ const themeVisuals = {
         bg: "#b8a878",
         pattern:
           "repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.12) 3px, rgba(0,0,0,0.12) 4px)",
-      }, // newsprint lines
+      }, 
       {
         bg: "#c9b896",
         pattern:
@@ -237,7 +237,7 @@ const themeVisuals = {
         bg: "#ddd0b4",
         pattern:
           "repeating-linear-gradient(90deg, transparent, transparent 6px, rgba(0,0,0,0.06) 6px, rgba(0,0,0,0.06) 7px), repeating-linear-gradient(0deg, transparent, transparent 6px, rgba(0,0,0,0.06) 6px, rgba(0,0,0,0.06) 7px)",
-      }, // grid/column
+      }, 
       {
         bg: "#f0e8d4",
         pattern:
@@ -252,12 +252,12 @@ const themeVisuals = {
         bg: "#a855f7",
         pattern:
           "radial-gradient(circle at 30% 30%, rgba(255,255,255,0.6) 0%, transparent 30%), radial-gradient(circle at 70% 70%, rgba(255,255,255,0.4) 0%, transparent 25%)",
-      }, // holographic glitter
+      }, 
       {
         bg: "#c084fc",
         pattern:
           "repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(255,255,255,0.3) 4px, rgba(255,255,255,0.3) 5px), repeating-linear-gradient(-45deg, transparent, transparent 4px, rgba(255,255,255,0.2) 4px, rgba(255,255,255,0.2) 5px)",
-      }, // shimmer grid
+      }, 
       {
         bg: "#e879f9",
         pattern:
@@ -267,6 +267,31 @@ const themeVisuals = {
         bg: "#f0abfc",
         pattern:
           "repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(255,255,255,0.3) 4px, rgba(255,255,255,0.3) 5px)",
+      },
+    ],
+  },
+  simple: {
+    bg: "linear-gradient(135deg, #f8f8f8 0%, #efefef 50%, #e8e8e8 100%)",
+    swatches: [
+      {
+        bg: "#d4d4d4",
+        pattern:
+          "repeating-linear-gradient(0deg, transparent, transparent 6px, rgba(255,255,255,0.6) 6px, rgba(255,255,255,0.6) 7px)",
+      },
+      {
+        bg: "#e8e8e8",
+        pattern:
+          "repeating-linear-gradient(90deg, transparent, transparent 6px, rgba(0,0,0,0.05) 6px, rgba(0,0,0,0.05) 7px)",
+      },
+      {
+        bg: "#f0f0f0",
+        pattern:
+          "radial-gradient(circle at 50% 50%, rgba(0,0,0,0.06) 1px, transparent 1px) 0 0 / 10px 10px",
+      },
+      {
+        bg: "#fafafa",
+        pattern:
+          "repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(0,0,0,0.04) 5px, rgba(0,0,0,0.04) 6px)",
       },
     ],
   },
@@ -336,14 +361,14 @@ export default function LandingPage({ onSelectTheme }) {
   const [hoveredTheme, setHoveredTheme] = useState(null);
   const rafRef = useRef(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  
+
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
     };
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 40);
@@ -1546,7 +1571,7 @@ export default function LandingPage({ onSelectTheme }) {
                               height: "3.75rem",
                               borderRadius: "8px 8px 0 0",
                               background: swatch.bg,
-                              backgroundImage: swatch.pattern, 
+                              backgroundImage: swatch.pattern,
                               border: "1.5px solid rgba(255,255,255,0.45)",
                               boxShadow: "inset 0 1px 0 rgba(255,255,255,0.55)",
                               transition: `transform 0.3s ${j * 0.04}s ease`,
