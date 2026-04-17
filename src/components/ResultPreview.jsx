@@ -1,298 +1,187 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Camera, CheckCircle2, RotateCcw, ArrowRight, FlipHorizontal } from 'lucide-react';
+import React, { useRef, useEffect, useState } from 'react';
+import { Download, Share2, RotateCcw, CheckCircle2, Home } from 'lucide-react';
+import { useBooth } from '../App';
 
 const FILTERS = [
-  { name: 'none',    label: 'original', css: 'none',                                                                          svgId: null,     overlay: null },
-  { name: 'soft',    label: 'soft',     css: 'brightness(1.05) saturate(1.1) contrast(0.92)',                                 svgId: 'f-soft',  overlay: { opacity: 0.38, blur: 1.2 } },
-  { name: 'glow',    label: 'glow',     css: 'brightness(1.12) saturate(1.25) contrast(0.88)',                                svgId: 'f-glow',  overlay: { opacity: 0.52, blur: 2.2 } },
-  { name: 'mono',    label: 'mono',     css: 'grayscale(100%)',                                                                svgId: null,     overlay: null },
-  { name: 'fade',    label: 'fade',     css: 'brightness(1.15) saturate(0.6) contrast(0.85)',                                 svgId: null,     overlay: null },
-  { name: 'vivid',   label: 'vivid',    css: 'saturate(1.8) contrast(1.1)',                                                   svgId: null,     overlay: null },
-  { name: 'warm',    label: 'warm',     css: 'sepia(0.35) saturate(1.3) brightness(1.05)',                                    svgId: null,     overlay: null },
-  { name: 'cool',    label: 'cool',     css: 'hue-rotate(200deg) saturate(0.9) brightness(1.05)',                             svgId: null,     overlay: null },
-  { name: 'vintage', label: 'vintage',  css: 'sepia(0.6) contrast(0.85) brightness(0.95) saturate(0.8)',                     svgId: null,     overlay: null },
-  { name: 'drama',   label: 'drama',    css: 'contrast(1.4) saturate(1.2) brightness(0.9)',                                   svgId: null,     overlay: null },
+  { name: 'none',    label: 'original', css: 'none',                                                                          overlay: null },
+  { name: 'soft',    label: 'soft',     css: 'brightness(1.05) saturate(1.1) contrast(0.92)',                                 overlay: { opacity: 0.38, blur: 1.2 } },
+  { name: 'glow',    label: 'glow',     css: 'brightness(1.12) saturate(1.25) contrast(0.88)',                                overlay: { opacity: 0.52, blur: 2.2 } },
+  { name: 'mono',    label: 'mono',     css: 'grayscale(100%)',                                                                overlay: null },
+  { name: 'fade',    label: 'fade',     css: 'brightness(1.15) saturate(0.6) contrast(0.85)',                                 overlay: null },
+  { name: 'vivid',   label: 'vivid',    css: 'saturate(1.8) contrast(1.1)',                                                   overlay: null },
+  { name: 'warm',    label: 'warm',     css: 'sepia(0.35) saturate(1.3) brightness(1.05)',                                    overlay: null },
+  { name: 'cool',    label: 'cool',     css: 'hue-rotate(200deg) saturate(0.9) brightness(1.05)',                             overlay: null },
+  { name: 'vintage', label: 'vintage',  css: 'sepia(0.6) contrast(0.85) brightness(0.95) saturate(0.8)',                     overlay: null },
+  { name: 'drama',   label: 'drama',    css: 'contrast(1.4) saturate(1.2) brightness(0.9)',                                   overlay: null },
 ];
 
-const SVG_FILTERS = `
-<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden">
-  <defs>
-    <filter id="f-soft" x="0%" y="0%" width="100%" height="100%" color-interpolation-filters="sRGB">
-      <feGaussianBlur stdDeviation="1.2" result="blur"/>
-      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
-    </filter>
-    <filter id="f-glow" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
-      <feGaussianBlur stdDeviation="2.2" result="blur"/>
-      <feBlend in="SourceGraphic" in2="blur" mode="screen" result="blended"/>
-      <feComposite in="blended" in2="SourceGraphic" operator="over"/>
-    </filter>
-  </defs>
-</svg>
-`;
-
-const CameraCapture = ({ selectedFrame, photoSlots, photos: initialPhotos, onPhotosComplete }) => {
-  const [photos, setPhotos] = useState(initialPhotos || []);
-  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(initialPhotos?.length || 0);
-  const [countdown, setCountdown] = useState(null);
-  const [stream, setStream] = useState(null);
-  const [flash, setFlash] = useState(false);
-  const [reviewMode, setReviewMode] = useState(false);
-  const [retakingIndex, setRetakingIndex] = useState(null);
-  const [selectedFilter, setSelectedFilter] = useState('none');
-  const [facingMode, setFacingMode] = useState('user');
-
-  const videoRef = useRef(null);
+const ResultPreview = ({ frameImage, photos, photoSlots, selectedFilter = 'none', onRetake }) => {
   const canvasRef = useRef(null);
+  const [downloading, setDownloading] = useState(false);
+  const [downloaded, setDownloaded] = useState(false);
+  const [sharing, setSharing] = useState(false);
+  const { handleReset, selectedTheme, selectedFrame } = useBooth();
 
-  const startCamera = async (mode) => {
-    const activeMode = mode ?? facingMode;
-    try {
-      if (stream) stream.getTracks().forEach(track => track.stop());
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: activeMode, width: 1280, height: 720 }
-      });
-      setStream(mediaStream);
-      if (videoRef.current) videoRef.current.srcObject = mediaStream;
-    } catch (err) {
-      alert('Cannot access camera. Please allow camera permission.');
-    }
+  const getFilename = () => {
+    const theme = selectedTheme?.name?.toLowerCase().replace(/\s+/g, '-') || 'photo';
+    const frame = selectedFrame?.name?.toLowerCase().replace(/\s+/g, '-') || 'strip';
+    const date = new Date();
+    const stamp = `${date.getFullYear()}${String(date.getMonth()+1).padStart(2,'0')}${String(date.getDate()).padStart(2,'0')}`;
+    return `framory-${theme}-${frame}-${stamp}.png`;
   };
 
-  const stopCamera = () => {
-    if (stream) {
-      stream.getTracks().forEach(track => track.stop());
-      setStream(null);
-    }
+  const getCaption = () => {
+    const captions = [
+      `📸 just did a photo booth session and i am NOT okay\n\nthe themes?? the frames?? everything is so cute\n\nmade with framory — free, no account needed\nhttps://framory-photo.vercel.app/`,
+      `🎬 main character moment fully unlocked\n\n4 shots. one vibe. zero effort.\n\nphoto booth strip via framory →\nhttps://framory-photo.vercel.app/`,
+      `ok so i found this photo booth app and it's genuinely so good 😭\n\ncurated themes, instant download, completely free\nno signup, no drama, just vibes\n\nhttps://framory-photo.vercel.app/`,
+      `✨ hot girl/boy/bestie activity of the day:\n\n1. open framory\n2. pick a theme that matches your era\n3. strike 4 poses\n4. download & post before you even blink\n\ncompletely free btw → https://framory-photo.vercel.app/`,
+      `🌙 not me at 2am doing photo booth sessions like i don't have things to do tomorrow\n\nbut framory said free and no signup so here we are\n\nhttps://framory-photo.vercel.app/`,
+      `soft life era 🌸 good lighting era ✨ framory era\n\njust made the cutest photo strip — took like 2 minutes\nfree forever, no account, instant download\n\nhttps://framory-photo.vercel.app/`,
+      `this is your sign to stop scrolling and make a photo strip 📷\n\npick a vibe → take 4 shots → download instantly\nit's free and actually so fun\n\nframory → https://framory-photo.vercel.app/`,
+      `🎞️ i am fully in my photo booth era and i have zero regrets\n\nframory has the cutest themes and it takes literally 2 minutes\nfree, no account, just good photos\n\nhttps://framory-photo.vercel.app/`,
+    ];
+    return captions[Math.floor(Math.random() * captions.length)];
   };
 
-  const handleFlipCamera = () => {
-    const newMode = facingMode === 'user' ? 'environment' : 'user';
-    setFacingMode(newMode);
-    startCamera(newMode);
-  };
+  const drawToCanvas = async (canvas) => {
+    const ctx = canvas.getContext('2d');
 
-  const handleTakePhoto = () => {
-    if (countdown !== null) return;
-    setCountdown(3);
-    const timer = setInterval(() => {
-      setCountdown(prev => {
-        if (prev === 1) {
-          clearInterval(timer);
-          setTimeout(() => capturePhoto(), 100);
-          return null;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  };
+    const frame = new Image();
+    frame.crossOrigin = 'anonymous';
+    frame.src = frameImage;
+    await new Promise(res => (frame.onload = res));
 
-  const capturePhoto = () => {
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    if (!video || !canvas) { alert('Camera error. Please try again.'); return; }
-    if (video.readyState !== video.HAVE_ENOUGH_DATA) { alert('Camera not ready. Please wait.'); return; }
-    if (video.videoWidth === 0 || video.videoHeight === 0) { alert('No video feed. Please check camera.'); return; }
+    canvas.width = frame.width;
+    canvas.height = frame.height;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    const context = canvas.getContext('2d');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    context.clearRect(0, 0, canvas.width, canvas.height);
-
+    // Resolve active filter CSS string
     const activeFilter = FILTERS.find(f => f.name === selectedFilter);
-    const isMirrored = facingMode === 'user';
+    const filterCss = activeFilter?.css !== 'none' ? activeFilter?.css : 'none';
 
-    // Draw video with base CSS filter
-    context.filter = activeFilter?.css !== 'none' ? activeFilter.css : 'none';
-    if (isMirrored) {
-      context.save();
-      context.scale(-1, 1);
-      context.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
-      context.restore();
-    } else {
-      context.drawImage(video, 0, 0, canvas.width, canvas.height);
-    }
-    context.filter = 'none';
+    for (let i = 0; i < Math.min(photos.length, photoSlots.length); i++) {
+      const img = new Image();
+      img.src = photos[i];
+      await new Promise(res => (img.onload = res));
 
-    // For soft/glow: composite a blurred layer on top to simulate skin-smoothing
-    if (activeFilter?.overlay) {
-      const { blur, opacity } = activeFilter.overlay;
-      const offscreen = document.createElement('canvas');
-      offscreen.width = canvas.width;
-      offscreen.height = canvas.height;
-      const offCtx = offscreen.getContext('2d');
-      offCtx.filter = `blur(${blur * 2}px) ${activeFilter.css !== 'none' ? activeFilter.css : ''}`.trim();
-      if (isMirrored) {
-        offCtx.save();
-        offCtx.scale(-1, 1);
-        offCtx.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
-        offCtx.restore();
-      } else {
-        offCtx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const slot = photoSlots[i];
+      if (!slot) continue;
+
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+
+      const clipX = slot.x;
+      const clipY = slot.y;
+      const clipW = slot.width;
+      const clipH = slot.height;
+
+      const scaleX = clipW / img.width;
+      const scaleY = clipH / img.height;
+      const scale = Math.max(scaleX, scaleY);
+
+      const srcX = (img.width - clipW / scale) / 2;
+      const srcY = (img.height - clipH / scale) / 2;
+      const srcW = clipW / scale;
+      const srcH = clipH / scale;
+
+      ctx.beginPath();
+      ctx.rect(clipX, clipY, clipW, clipH);
+      ctx.clip();
+
+      // Apply base CSS filter
+      ctx.filter = filterCss;
+      ctx.drawImage(img, srcX, srcY, srcW, srcH, clipX, clipY, clipW, clipH);
+      ctx.filter = 'none';
+
+      // For soft/glow: composite a blurred layer to simulate skin-smoothing
+      if (activeFilter?.overlay) {
+        const { blur, opacity } = activeFilter.overlay;
+        const offscreen = document.createElement('canvas');
+        offscreen.width = canvas.width;
+        offscreen.height = canvas.height;
+        const offCtx = offscreen.getContext('2d');
+        offCtx.filter = `blur(${blur * 2}px) ${filterCss !== 'none' ? filterCss : ''}`.trim();
+        offCtx.drawImage(img, srcX, srcY, srcW, srcH, clipX, clipY, clipW, clipH);
+        offCtx.filter = 'none';
+
+        ctx.globalAlpha = opacity;
+        ctx.globalCompositeOperation = activeFilter.name === 'glow' ? 'screen' : 'normal';
+        ctx.drawImage(offscreen, 0, 0);
+        ctx.globalAlpha = 1;
+        ctx.globalCompositeOperation = 'source-over';
       }
-      offCtx.filter = 'none';
 
-      context.globalAlpha = opacity;
-      context.globalCompositeOperation = selectedFilter === 'glow' ? 'screen' : 'normal';
-      context.drawImage(offscreen, 0, 0);
-      context.globalAlpha = 1;
-      context.globalCompositeOperation = 'source-over';
+      ctx.restore();
     }
 
-    const photoData = canvas.toDataURL('image/png');
-    if (!photoData || photoData.length < 1000) { alert('Failed to capture photo. Please try again.'); return; }
-
-    setFlash(true);
-    setTimeout(() => setFlash(false), 200);
-
-    let newPhotos;
-    if (retakingIndex !== null) {
-      newPhotos = [...photos];
-      newPhotos[retakingIndex] = photoData;
-      setPhotos(newPhotos);
-      setRetakingIndex(null);
-    } else {
-      newPhotos = [...photos, photoData];
-      setPhotos(newPhotos);
-      setCurrentPhotoIndex(Math.min(newPhotos.length, totalSlots - 1));
-    }
-
-    if (newPhotos.length >= 4 && retakingIndex === null) {
-      setTimeout(() => {
-        stopCamera();
-        setReviewMode(true);
-      }, 400);
-    } else if (retakingIndex !== null) {
-      setTimeout(() => {
-        stopCamera();
-        setReviewMode(true);
-      }, 400);
-    }
-  };
-
-  const handleRetakePhoto = async (index) => {
-    setRetakingIndex(index);
-    setReviewMode(false);
-    await startCamera(facingMode);
-  };
-
-  const handleConfirm = () => {
-    onPhotosComplete(photos, selectedFilter);
+    ctx.drawImage(frame, 0, 0);
   };
 
   useEffect(() => {
-    startCamera(facingMode);
-    return () => stopCamera();
-  }, []);
+    const run = async () => {
+      if (!frameImage || !canvasRef.current || photos.length === 0) return;
+      await drawToCanvas(canvasRef.current);
+    };
+    run();
+  }, [frameImage, photos, photoSlots, selectedFilter]);
 
-  const totalSlots = 4;
-  const shootingIndex = retakingIndex !== null ? retakingIndex : currentPhotoIndex;
-  const activeCssFilter = FILTERS.find(f => f.name === selectedFilter)?.css || 'none';
+  const downloadResult = async () => {
+    setDownloading(true);
+    try {
+      const canvas = document.createElement('canvas');
+      await drawToCanvas(canvas);
 
-  // ── REVIEW MODE ──
-  if (reviewMode) {
-    return (
-      <div style={{
-        minHeight: '100vh',
-        background: '#FBF8F4',
-        fontFamily: "'Nunito', sans-serif",
-        color: '#1a1a1a',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 'clamp(2rem, 5vw, 4rem) clamp(1rem, 4vw, 2rem)',
-        position: 'relative',
-        overflowX: 'hidden',
-      }}>
-        <style>{`
-          .blob { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; }
-          .grad-text {
-            background: linear-gradient(135deg, #FF8A80 0%, #FF6B9D 40%, #C77DFF 75%, #7B9CFF 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-          }
-          .retake-btn {
-            display: inline-flex; align-items: center; gap: 0.35rem;
-            font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.75rem;
-            background: rgba(26,26,26,0.75); color: #fff;
-            border: none; border-radius: 100px;
-            padding: 0.4rem 0.85rem; cursor: pointer;
-            transition: all 0.2s; backdrop-filter: blur(4px);
-          }
-          .retake-btn:hover { background: #1a1a1a; transform: scale(1.05); }
-          .confirm-btn {
-            display: inline-flex; align-items: center; gap: 0.5rem;
-            font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 1rem;
-            background: #1a1a1a; color: #fff;
-            border: none; border-radius: 100px;
-            padding: 0.9rem 2.5rem; cursor: pointer;
-            transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
-            box-shadow: 0 8px 28px rgba(26,26,26,0.18);
-          }
-          .confirm-btn:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 14px 36px rgba(26,26,26,0.25); }
-          @keyframes fadeIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-          .fade-in { animation: fadeIn 0.4s ease both; }
-        `}</style>
+      const link = document.createElement('a');
+      link.download = getFilename();
+      link.href = canvas.toDataURL('image/png');
+      link.click();
 
-        <div className="blob" style={{ width: 360, height: 360, background: 'rgba(255,194,194,0.3)', top: '-8%', right: '0%', filter: 'blur(75px)' }} />
-        <div className="blob" style={{ width: 240, height: 240, background: 'rgba(196,179,255,0.22)', bottom: '5%', left: '2%', filter: 'blur(60px)' }} />
+      setDownloaded(true);
+      setTimeout(() => setDownloaded(false), 2500);
+    } finally {
+      setDownloading(false);
+    }
+  };
 
-        <div className="fade-in" style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: '680px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2rem' }}>
+  const shareResult = async () => {
+    setSharing(true);
+    const caption = getCaption();
+    try {
+      const canvas = document.createElement('canvas');
+      await drawToCanvas(canvas);
 
-          {/* Header */}
-          <div style={{ textAlign: 'center' }}>
-            <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: 'clamp(2rem, 6vw, 3rem)', fontWeight: 400, lineHeight: 1, letterSpacing: '-0.01em', color: '#1a1a1a', marginBottom: '0.4rem' }}>
-              looking <em className="grad-text">good?</em>
-            </h2>
-            <p style={{ color: '#B0A89A', fontSize: '0.9rem', fontWeight: 400 }}>
-              retake any photo you're not happy with, then continue.
-            </p>
-          </div>
+      const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+      const file = new File([blob], getFilename(), { type: 'image/png' });
 
-          {/* 2x2 photo grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', width: '100%' }}>
-            {photos.map((photo, i) => (
-              <div key={i} style={{ position: 'relative', borderRadius: '16px', overflow: 'hidden', border: '1.5px solid #EDEAE4', aspectRatio: '4/3', background: '#1a1a1a' }}>
-                <img
-                  src={photo}
-                  alt={`Photo ${i + 1}`}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                />
-                <div style={{
-                  position: 'absolute', top: '0.6rem', left: '0.6rem',
-                  width: '1.6rem', height: '1.6rem', borderRadius: '50%',
-                  background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(4px)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontFamily: "'Fraunces', serif", fontStyle: 'italic', fontSize: '0.85rem', color: '#1a1a1a',
-                }}>
-                  {i + 1}
-                </div>
-                <div style={{ position: 'absolute', bottom: '0.6rem', right: '0.6rem' }}>
-                  <button className="retake-btn" onClick={() => handleRetakePhoto(i)}>
-                    <RotateCcw size={11} strokeWidth={2.5} />
-                    Retake
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: 'My Framory Strip',
+          text: caption,
+        });
+      } else if (navigator.share) {
+        await navigator.share({
+          title: 'My Framory Strip',
+          text: caption,
+          url: 'https://framory-photo.vercel.app/',
+        });
+      } else {
+        alert('Sharing not supported on this browser. Try downloading instead!');
+      }
+    } catch (err) {
+      if (err.name !== 'AbortError') {
+        console.error('Share failed:', err);
+      }
+    } finally {
+      setSharing(false);
+    }
+  };
 
-          {/* Confirm button */}
-          <button className="confirm-btn" onClick={handleConfirm}>
-            <CheckCircle2 size={17} strokeWidth={2} />
-            Looks good, continue
-            <ArrowRight size={15} />
-          </button>
-
-          <p style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.58rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#C8C0B8' }}>
-            tap retake to redo individual shots
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // ── CAMERA MODE ──
-  const activeFilterObj = FILTERS.find(f => f.name === selectedFilter);
+  const canShareSupported = typeof navigator !== 'undefined' && !!(navigator.share || navigator.canShare);
 
   return (
     <div style={{
@@ -300,225 +189,178 @@ const CameraCapture = ({ selectedFrame, photoSlots, photos: initialPhotos, onPho
       background: '#FBF8F4',
       fontFamily: "'Nunito', sans-serif",
       color: '#1a1a1a',
+      overflowX: 'hidden',
+      position: 'relative',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: 'clamp(0.5rem, 1.5vw, 1.5rem) clamp(1.2rem, 1.5vw, 2rem)',
-      position: 'relative',
-      overflowX: 'hidden',
+      padding: 'clamp(2rem, 6vw, 4rem) clamp(1rem, 4vw, 2rem)',
     }}>
       <style>{`
-        @keyframes flash-anim { 0% { opacity: 0.85; } 100% { opacity: 0; } }
-        .flash-overlay { animation: flash-anim 0.2s ease-out forwards; }
-        @keyframes count-pop { 0% { transform: scale(1.4); opacity: 0; } 30% { opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
-        .count-pop { animation: count-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
-        .shutter-btn {
-          display: inline-flex; align-items: center; justify-content: center; gap: 0.6rem;
-          background: #1a1a1a; color: #fff;
-          font-family: 'Nunito', sans-serif; font-weight: 800; font-size: clamp(0.9rem, 2.5vw, 1rem);
-          border: none; border-radius: 100px;
-          padding: clamp(0.85rem, 3vw, 1rem) clamp(1.75rem, 6vw, 3rem);
-          cursor: pointer; transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
-          box-shadow: 0 6px 24px rgba(26,26,26,0.15);
-        }
-        .shutter-btn:hover:not(:disabled) { transform: translateY(-2px) scale(1.03); box-shadow: 0 14px 36px rgba(26,26,26,0.22); }
-        .shutter-btn:disabled { opacity: 0.55; cursor: not-allowed; }
-        .thumb { border-radius: 10px; overflow: hidden; border: 2px solid #EDEAE4; flex-shrink: 0; transition: border-color 0.2s; background: #F2EEE8; }
-        .thumb.filled { border-color: #CC3B2A; }
-        .thumb.active { border-color: #1a1a1a; box-shadow: 0 0 0 3px rgba(26,26,26,0.1); }
-        .thumb.retaking { border-color: #C77DFF; box-shadow: 0 0 0 3px rgba(199,125,255,0.2); }
         .blob { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; }
-        .grad-text { background: linear-gradient(135deg, #FF8A80 0%, #FF6B9D 40%, #C77DFF 75%, #7B9CFF 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .video-wrapper { width: 100%; max-width: 550px!important; }
-        @media (max-width: 640px) { .video-wrapper { max-width: 100%; } }
-        @media (max-height: 700px) { .video-wrapper { max-width: 520px; } }
-        .filter-item { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; flex-shrink: 0; }
-        .filter-thumb-cam {
-          width: 40px; height: 40px; border-radius: 10px; overflow: hidden;
-          border: 2px solid #EDEAE4; transition: border-color 0.15s, transform 0.15s;
-          background: #1a1a1a;
+        .grad-text {
+          background: linear-gradient(135deg, #FF8A80 0%, #FF6B9D 40%, #C77DFF 75%, #7B9CFF 100%);
+          -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
-        .filter-thumb-cam.active {
-          border-color: #1a1a1a;
-          transform: scale(1.1);
-          box-shadow: 0 0 0 3px rgba(26,26,26,0.1);
-        }
-        .filter-label {
-          font-size: 9px; font-family: 'DM Mono', monospace; letter-spacing: 0.05em;
-          text-transform: uppercase; color: #C8C0B8; font-weight: 400; transition: color 0.15s;
-        }
-        .filter-label.active { color: #1a1a1a; font-weight: 700; }
-        .flip-btn {
-          display: inline-flex; align-items: center; justify-content: center;
-          background: rgba(255,255,255,0.9); border: 1.5px solid #EDEAE4;
-          border-radius: 50%; width: 44px; height: 44px;
+        .btn-download {
+          display: inline-flex; align-items: center; gap: 0.55rem;
+          background: #1a1a1a; color: #fff;
+          font-family: 'Nunito', sans-serif; font-weight: 800;
+          font-size: clamp(0.88rem, 2.5vw, 0.95rem);
+          border: none; border-radius: 100px;
+          padding: clamp(0.8rem, 3vw, 1rem) clamp(1.5rem, 5vw, 2.25rem);
           cursor: pointer; transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
-          box-shadow: 0 4px 14px rgba(0,0,0,0.08); backdrop-filter: blur(4px);
+          box-shadow: 0 6px 24px rgba(26,26,26,0.15); white-space: nowrap;
         }
-        .flip-btn:hover { transform: scale(1.08) rotate(15deg); box-shadow: 0 8px 20px rgba(0,0,0,0.12); }
-        .flip-btn:active { transform: scale(0.95) rotate(180deg); }
+        .btn-download:hover:not(:disabled) { transform: translateY(-2px) scale(1.03); box-shadow: 0 14px 36px rgba(26,26,26,0.22); }
+        .btn-download:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn-download.success { background: #1a7a4a; box-shadow: 0 6px 24px rgba(26,122,74,0.2); }
+        .btn-secondary {
+          display: inline-flex; align-items: center; gap: 0.55rem;
+          background: transparent; color: #555;
+          font-family: 'Nunito', sans-serif; font-weight: 700;
+          font-size: clamp(0.88rem, 2.5vw, 0.95rem);
+          border: 1.5px solid #E0DAD3; border-radius: 100px;
+          padding: clamp(0.8rem, 3vw, 1rem) clamp(1.5rem, 5vw, 2.25rem);
+          cursor: pointer; transition: all 0.2s; white-space: nowrap;
+        }
+        .btn-secondary:hover { border-color: #1a1a1a; color: #1a1a1a; }
+        .btn-secondary:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn-home {
+          display: inline-flex; align-items: center; gap: 0.5rem;
+          background: transparent; color: #B0A89A;
+          font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.82rem;
+          border: none; border-radius: 100px; padding: 0.5rem 1rem;
+          cursor: pointer; transition: all 0.2s; white-space: nowrap;
+          text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px;
+        }
+        .btn-home:hover { color: #CC3B2A; text-decoration-color: #CC3B2A; }
+        .canvas-card {
+          background: #fff; border-radius: 20px; border: 1.5px solid #EDEAE4;
+          padding: clamp(0.75rem, 2.5vw, 1.25rem);
+          box-shadow: 0 20px 60px rgba(0,0,0,0.08); display: inline-block; transition: box-shadow 0.3s;
+        }
+        .canvas-card:hover { box-shadow: 0 28px 72px rgba(0,0,0,0.12); }
+        .action-row { display: flex; gap: 0.75rem; align-items: center; justify-content: center; flex-wrap: wrap; }
+        .wavy-wrap { position: relative; display: inline-block; }
+        .wavy-wrap svg { position: absolute; bottom: -8px; left: 0; width: 100%; height: 10px; display: block; }
+        @keyframes appear {
+          from { opacity: 0; transform: translateY(20px) scale(0.98); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .appear { animation: appear 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+        .appear-delay { animation: appear 0.5s 0.15s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+        .appear-delay-2 { animation: appear 0.5s 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @media (max-width: 480px) {
+          .action-row { flex-direction: column; width: 100%; }
+          .btn-download, .btn-secondary { justify-content: center; width: 100%; }
+        }
       `}</style>
 
-      <div className="blob" style={{ width: 360, height: 360, background: 'rgba(255,194,194,0.3)', top: '-8%', right: '0%', filter: 'blur(75px)' }} />
-      <div className="blob" style={{ width: 240, height: 240, background: 'rgba(196,179,255,0.22)', bottom: '5%', left: '2%', filter: 'blur(60px)' }} />
+      <div className="blob" style={{ width: 420, height: 420, background: 'rgba(255,194,194,0.3)', top: '-8%', right: '-5%', filter: 'blur(80px)' }} />
+      <div className="blob" style={{ width: 260, height: 260, background: 'rgba(168,222,192,0.25)', bottom: '5%', left: '2%', filter: 'blur(65px)' }} />
+      <div className="blob" style={{ width: 200, height: 200, background: 'rgba(196,179,255,0.2)', top: '40%', right: '5%', filter: 'blur(55px)' }} />
 
-      <div dangerouslySetInnerHTML={{ __html: SVG_FILTERS }} style={{ position: 'absolute', width: 0, height: 0, overflow: 'hidden' }} />
+      <div style={{
+        position: 'fixed', top: '2rem', right: 0, width: '200px', height: '200px', opacity: 0.16,
+        backgroundImage: 'radial-gradient(circle, #D8D2CA 1px, transparent 1px)',
+        backgroundSize: '26px 26px',
+        maskImage: 'radial-gradient(ellipse at top right, black 15%, transparent 72%)',
+        WebkitMaskImage: 'radial-gradient(ellipse at top right, black 15%, transparent 72%)',
+        pointerEvents: 'none', zIndex: 0,
+      }} />
 
-      <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: '700px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'clamp(0.5rem, 1vw, 1rem)' }}>
-
-        {/* Header */}
-        <div style={{ textAlign: 'center' }}>
+      <div style={{
+        position: 'relative', zIndex: 1, width: '100%',
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        gap: 'clamp(1.25rem, 4vw, 2rem)',
+      }}>
+        <div style={{ textAlign: 'center' }} className="appear">
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: '0.45rem',
             background: '#fff', border: '1.5px solid #EDEAE4', borderRadius: '100px',
             padding: '0.3rem 0.85rem 0.3rem 0.5rem',
             boxShadow: '0 2px 10px rgba(0,0,0,0.04)', marginBottom: '1rem',
           }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: retakingIndex !== null ? '#C77DFF' : '#CC3B2A', display: 'inline-block', flexShrink: 0 }} />
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#CC3B2A', display: 'inline-block', flexShrink: 0 }} />
             <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.6rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#B0A89A' }}>
-              {retakingIndex !== null ? `retaking photo ${retakingIndex + 1}` : selectedFrame?.name}
+              your memory
             </span>
           </div>
-
-          <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: 'clamp(1.75rem, 6vw, 3.25rem)', fontWeight: 400, lineHeight: 1.0, letterSpacing: '-0.01em', color: '#1a1a1a', marginBottom: '0.25rem' }}>
-            {retakingIndex !== null ? (
-              <>retake <em className="grad-text" style={{ fontStyle: 'italic' }}>#{retakingIndex + 1}</em></>
-            ) : (
-              <>photo{' '}<em className="grad-text" style={{ fontStyle: 'italic' }}>{shootingIndex + 1}</em>
-              <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: 'clamp(1rem, 3vw, 1.5rem)', fontWeight: 400, color: '#C8C0B8', fontStyle: 'normal' }}> / {totalSlots}</span></>
-            )}
+          <h2 style={{
+            fontFamily: "'Fraunces', serif", fontSize: 'clamp(2rem, 7vw, 4rem)',
+            fontWeight: 400, lineHeight: 1.0, letterSpacing: '-0.01em', color: '#1a1a1a', marginBottom: '0.5rem',
+          }}>
+            looking{' '}
+            <span className="wavy-wrap">
+              <em className="grad-text" style={{ fontStyle: 'italic' }}>gorgeous</em>
+              <svg viewBox="0 0 300 10" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M0 6 Q25 1 50 6 Q75 11 100 6 Q125 1 150 6 Q175 11 200 6 Q225 1 250 6 Q275 11 300 6"
+                  fill="none" stroke="#CC3B2A" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+            </span>
           </h2>
-          <p style={{ color: '#B0A89A', fontSize: 'clamp(0.8rem, 1vw, 0.9rem)', fontWeight: 400 }}>
-            {countdown ? 'get ready...' : 'strike a pose'}
+          <p style={{ color: '#B0A89A', fontSize: 'clamp(0.8rem, 2vw, 0.9rem)', fontWeight: 400 }}>
+            download it before you close the tab
           </p>
         </div>
 
-        {/* Camera viewfinder */}
-        <div className="video-wrapper" style={{ position: 'relative' }}>
-          <div style={{ borderRadius: '20px', overflow: 'hidden', border: '1.5px solid #EDEAE4', background: '#1a1a1a', position: 'relative', boxShadow: '0 16px 48px rgba(0,0,0,0.1)' }}>
-            {flash && <div className="flash-overlay" style={{ position: 'absolute', inset: 0, background: '#fff', zIndex: 30, borderRadius: '18px' }} />}
-            {countdown && (
-              <div style={{ position: 'absolute', inset: 0, background: 'rgba(26,26,26,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 20, borderRadius: '18px' }}>
-                <span key={countdown} className="count-pop" style={{ fontFamily: "'Fraunces', serif", fontStyle: 'italic', fontSize: 'clamp(5rem, 20vw, 9rem)', color: '#fff', lineHeight: 1 }}>{countdown}</span>
-              </div>
-            )}
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              muted
-              style={{
-                width: '100%',
-                aspectRatio: '16/10',
-                objectFit: 'cover',
-                transform: facingMode === 'user' ? 'scaleX(-1)' : 'scaleX(1)',
-                display: 'block',
-                filter: activeCssFilter,
-              }}
-            />
-            {/* Soft/glow smoothing overlay */}
-            {activeFilterObj?.overlay && (
-              <div style={{
-                position: 'absolute', inset: 0, zIndex: 5, pointerEvents: 'none',
-                backdropFilter: `blur(${activeFilterObj.overlay.blur}px)`,
-                WebkitBackdropFilter: `blur(${activeFilterObj.overlay.blur}px)`,
-                opacity: activeFilterObj.overlay.opacity,
-                mixBlendMode: selectedFilter === 'glow' ? 'screen' : 'normal',
-                borderRadius: '18px',
-              }} />
-            )}
+        <div className="canvas-card appear">
+          <canvas
+            ref={canvasRef}
+            style={{
+              maxWidth: '100%', height: 'auto', display: 'block',
+              borderRadius: '10px', maxHeight: 'clamp(400px, 65vh, 700px)', width: 'auto',
+            }}
+          />
+        </div>
 
-            {/* Flip camera button */}
-            <button
-              className="flip-btn"
-              onClick={handleFlipCamera}
-              style={{ position: 'absolute', top: '0.75rem', right: '0.75rem', zIndex: 10 }}
-              title={facingMode === 'user' ? 'Switch to back camera' : 'Switch to front camera'}
-            >
-              <FlipHorizontal size={18} strokeWidth={2} color="#1a1a1a" />
+        <div className="action-row appear-delay">
+          <button
+            className={`btn-download${downloaded ? ' success' : ''}`}
+            onClick={downloadResult}
+            disabled={downloading}
+          >
+            {downloaded ? (
+              <><CheckCircle2 size={17} strokeWidth={2.5} /> Saved!</>
+            ) : downloading ? (
+              <><div style={{ width: 17, height: 17, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} /> Saving...</>
+            ) : (
+              <><Download size={17} strokeWidth={2} /> Download Strip</>
+            )}
+          </button>
+
+          {canShareSupported && (
+            <button className="btn-secondary" onClick={shareResult} disabled={sharing}>
+              {sharing ? (
+                <><div style={{ width: 15, height: 15, border: '2px solid #DDD', borderTopColor: '#555', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} /> Sharing...</>
+              ) : (
+                <><Share2 size={16} strokeWidth={2} /> Share</>
+              )}
             </button>
+          )}
 
-            {/* Corner markers */}
-            {['top-left', 'top-right', 'bottom-left', 'bottom-right'].map((pos) => {
-              const isTop = pos.includes('top'), isLeft = pos.includes('left');
-              return (
-                <div key={pos} style={{ position: 'absolute', top: isTop ? '0.75rem' : 'auto', bottom: !isTop ? '0.75rem' : 'auto', left: isLeft ? '0.75rem' : 'auto', right: !isLeft ? '0.75rem' : 'auto', width: '1.25rem', height: '1.25rem', borderTop: isTop ? '2px solid rgba(255,255,255,0.4)' : 'none', borderBottom: !isTop ? '2px solid rgba(255,255,255,0.4)' : 'none', borderLeft: isLeft ? '2px solid rgba(255,255,255,0.4)' : 'none', borderRight: !isLeft ? '2px solid rgba(255,255,255,0.4)' : 'none', borderRadius: isTop && isLeft ? '4px 0 0 0' : isTop ? '0 4px 0 0' : isLeft ? '0 0 0 4px' : '0 0 4px 0' }} />
-              );
-            })}
-          </div>
-          <canvas ref={canvasRef} style={{ display: 'none' }} />
+          <button className="btn-secondary" onClick={onRetake}>
+            <RotateCcw size={16} strokeWidth={2} /> Retake
+          </button>
         </div>
 
-        {/* Thumbnail strip */}
-        <div style={{ display: 'flex', gap: 'clamp(0.4rem, 2vw, 0.6rem)', alignItems: 'center', justifyContent: 'center' }}>
-          {Array.from({ length: totalSlots }).map((_, i) => {
-            const isFilled = i < photos.length;
-            const isActive = i === shootingIndex && retakingIndex === null;
-            const isRetaking = i === retakingIndex;
-            return (
-              <div key={i} className={`thumb${isFilled ? ' filled' : ''}${isActive ? ' active' : ''}${isRetaking ? ' retaking' : ''}`} style={{ width: 50, height: 50, position: 'relative' }}>
-                {isFilled ? (
-                  <>
-                    <img src={photos[i]} alt={`Photo ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', opacity: isRetaking ? 0.4 : 1 }} />
-                    {!isRetaking && (
-                      <div style={{ position: 'absolute', bottom: 3, right: 3, width: 16, height: 16, borderRadius: '50%', background: '#CC3B2A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <CheckCircle2 size={10} style={{ color: '#fff', strokeWidth: 2.5 }} />
-                      </div>
-                    )}
-                    {isRetaking && (
-                      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.5rem', letterSpacing: '0.05em', textTransform: 'uppercase', color: '#C77DFF', fontWeight: 500 }}>retaking</span>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <span style={{ fontFamily: "'Fraunces', serif", fontStyle: 'italic', fontSize: '1.1rem', color: isActive ? '#1a1a1a' : '#D8D2CA', lineHeight: 1 }}>{i + 1}</span>
-                  </div>
-                )}
-              </div>
-            );
-          })}
+        <div className="appear-delay-2" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.35rem' }}>
+          <button className="btn-home" onClick={handleReset}>
+            <Home size={13} strokeWidth={2} /> Start a new session
+          </button>
+          <p style={{
+            fontFamily: "'DM Mono', monospace", fontSize: '0.58rem',
+            letterSpacing: '0.1em', textTransform: 'uppercase', color: '#C8C0B8', textAlign: 'center',
+          }}>
+            high quality png · free forever
+          </p>
         </div>
-
-        {/* Filter strip — always color swatches, never photo preview */}
-        <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', padding: '2px 0 6px', width: '100%', maxWidth: '550px', justifyContent: 'center', scrollbarWidth: 'none' }}>
-          {FILTERS.map(f => (
-            <div key={f.name} className="filter-item" onClick={() => setSelectedFilter(f.name)}>
-              <div className={`filter-thumb-cam${selectedFilter === f.name ? ' active' : ''}`}>
-                <div style={{
-                  width: '100%', height: '100%',
-                  background:
-                    f.name === 'mono'    ? '#888'    :
-                    f.name === 'warm'    ? '#c4956a' :
-                    f.name === 'cool'    ? '#7aaed4' :
-                    f.name === 'vintage' ? '#b09070' :
-                    f.name === 'drama'   ? '#222'    :
-                    f.name === 'vivid'   ? '#e05080' :
-                    f.name === 'fade'    ? '#c8c0b8' :
-                    f.name === 'soft'    ? '#f2c4b8' :
-                    f.name === 'glow'    ? '#ffe0cc' :
-                    '#d8d2ca',
-                }} />
-              </div>
-              <span className={`filter-label${selectedFilter === f.name ? ' active' : ''}`}>{f.label}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Shutter button */}
-        <button className="shutter-btn" onClick={handleTakePhoto} disabled={countdown !== null}>
-          <Camera size={18} strokeWidth={2} />
-          {countdown ? 'get ready...' : retakingIndex !== null ? `Retake Photo ${retakingIndex + 1}` : 'Take Photo'}
-        </button>
-
-        <p style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.58rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#C8C0B8' }}>
-          {retakingIndex !== null ? `replacing photo ${retakingIndex + 1}` : totalSlots - photos.length > 0 ? `${totalSlots - photos.length} shot${totalSlots - photos.length > 1 ? 's' : ''} remaining` : 'processing...'}
-        </p>
       </div>
     </div>
   );
 };
 
-export default CameraCapture;
+export default ResultPreview;
