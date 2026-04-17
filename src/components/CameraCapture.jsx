@@ -6,11 +6,9 @@ const FILTERS = [
   { name: 'soft',    label: 'soft',     css: 'brightness(1.05) saturate(1.1) contrast(0.92)',                                 svgId: 'f-soft',  overlay: { opacity: 0.38, blur: 1.2 } },
   { name: 'glow',    label: 'glow',     css: 'brightness(1.12) saturate(1.25) contrast(0.88)',                                svgId: 'f-glow',  overlay: { opacity: 0.52, blur: 2.2 } },
   { name: 'mono',    label: 'mono',     css: 'grayscale(100%)',                                                                svgId: null,     overlay: null },
-  { name: 'fade',    label: 'fade',     css: 'brightness(1.15) saturate(0.6) contrast(0.85)',                                 svgId: null,     overlay: null },
-  { name: 'vivid',   label: 'vivid',    css: 'saturate(1.8) contrast(1.1)',                                                   svgId: null,     overlay: null },
+  { name: 'fade',    label: 'fade',     css: 'brightness(1.15) saturate(0.6) contrast(0.85)',                                          svgId: null,     overlay: null },
   { name: 'warm',    label: 'warm',     css: 'sepia(0.35) saturate(1.3) brightness(1.05)',                                      svgId: null,     overlay: null },
-  { name: 'vintage', label: 'vintage',  css: 'sepia(0.6) contrast(0.85) brightness(0.95) saturate(0.8)',                     svgId: null,     overlay: null },
-  { name: 'drama',   label: 'drama',    css: 'contrast(1.4) saturate(1.2) brightness(0.9)',                                   svgId: null,     overlay: null },
+  { name: 'vintage', label: 'vintage',  css: 'sepia(0.6) contrast(0.85) brightness(0.95) saturate(0.8)',                                 svgId: null,     overlay: null },
 ];
 
 const SVG_FILTERS = `
@@ -492,8 +490,6 @@ const CameraCapture = ({ selectedFrame, photoSlots, photos: initialPhotos, onPho
                     f.name === 'mono'    ? '#888'    :
                     f.name === 'warm'    ? '#c4956a' :
                     f.name === 'vintage' ? '#b09070' :
-                    f.name === 'drama'   ? '#222'    :
-                    f.name === 'vivid'   ? '#e05080' :
                     f.name === 'fade'    ? '#c8c0b8' :
                     f.name === 'soft'    ? '#f2c4b8' :
                     f.name === 'glow'    ? '#ffe0cc' :
