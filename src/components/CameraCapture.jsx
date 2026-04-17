@@ -347,7 +347,7 @@ const CameraCapture = ({ selectedFrame, photoSlots, photos: initialPhotos, onPho
         .video-wrapper { width: 100%; max-width: 550px!important; }
         @media (max-width: 640px) { .video-wrapper { max-width: 100%; } }
         @media (max-height: 700px) { .video-wrapper { max-width: 520px; } }
-        .filter-item { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; flex-shrink: 0; }
+        .filter-item { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; touch-action:manipulation; flex-shrink: 0; -webkit-tap-highlight-color:transparent; }
         .filter-thumb-cam {
           width: 40px; height: 40px; border-radius: 10px; overflow: hidden;
           border: 2px solid #EDEAE4; transition: border-color 0.15s, transform 0.15s;
@@ -373,6 +373,7 @@ const CameraCapture = ({ selectedFrame, photoSlots, photos: initialPhotos, onPho
         .flip-btn:active { transform: scale(0.95) rotate(180deg); }
         .filter-strip {
           display: flex;
+          display:flex;
           gap: 0.5rem;
           padding: 2px 0.5rem 6px;
           width: 100%;
@@ -517,7 +518,7 @@ const CameraCapture = ({ selectedFrame, photoSlots, photos: initialPhotos, onPho
         {/* Filter strip — scrollable on mobile, wrapped on desktop */}
         <div className="filter-strip">
           {FILTERS.map(f => (
-            <div key={f.name} className="filter-item" onClick={() => handleFilterSelect(f.name)}>
+            <div key={f.name} className="filter-item" onTouchStart={() => handleFilterSelect(f.name)} onClick={() => handleFilterSelect(f.name)}>
               <div className={`filter-thumb-cam${selectedFilter === f.name ? ' active' : ''}`}>
                 <div style={{ width: '100%', height: '100%', background: FILTER_SWATCHES[f.name] ?? '#d8d2ca' }} />
               </div>
