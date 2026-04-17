@@ -8,24 +8,11 @@ const FILTERS = [
   { name: 'mono',    label: 'mono',     css: 'grayscale(100%)',                                                                svgId: null,     overlay: null },
   { name: 'fade',    label: 'fade',     css: 'brightness(1.15) saturate(0.6) contrast(0.85)',                                 svgId: null,     overlay: null },
   { name: 'vivid',   label: 'vivid',    css: 'saturate(1.8) contrast(1.1)',                                                   svgId: null,     overlay: null },
-  { name: 'warm',    label: 'warm',     css: 'sepia(0.35) saturate(1.3) brightness(1.05)',                                    svgId: null,     overlay: null },
-  { name: 'cool',    label: 'cool',     css: 'hue-rotate(200deg) saturate(0.9) brightness(1.05)',                             svgId: null,     overlay: null },
+  { name: 'warm',    label: 'warm',     css: 'sepia(0.35) saturate(1.3) brightness(1.05)',                                      svgId: null,     overlay: null },
   { name: 'vintage', label: 'vintage',  css: 'sepia(0.6) contrast(0.85) brightness(0.95) saturate(0.8)',                     svgId: null,     overlay: null },
   { name: 'drama',   label: 'drama',    css: 'contrast(1.4) saturate(1.2) brightness(0.9)',                                   svgId: null,     overlay: null },
 ];
 
-const FILTER_SWATCHES = {
-  none:    '#d8d2ca',
-  mono:    '#888',
-  warm:    '#c4956a',
-  cool:    '#7aaed4',
-  vintage: '#b09070',
-  drama:   '#222',
-  vivid:   '#e05080',
-  fade:    '#c8c0b8',
-  soft:    '#f2c4b8',
-  glow:    '#ffe0cc',
-};
 const SVG_FILTERS = `
 <svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden">
   <defs>
@@ -243,8 +230,6 @@ const CameraCapture = ({ selectedFrame, photoSlots, photos: initialPhotos, onPho
           .confirm-btn:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 14px 36px rgba(26,26,26,0.25); }
           @keyframes fadeIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
           .fade-in { animation: fadeIn 0.4s ease both; }
-          
-        
         `}</style>
 
         <div className="blob" style={{ width: 360, height: 360, background: 'rgba(255,194,194,0.3)', top: '-8%', right: '0%', filter: 'blur(75px)' }} />
@@ -347,10 +332,11 @@ const CameraCapture = ({ selectedFrame, photoSlots, photos: initialPhotos, onPho
         .video-wrapper { width: 100%; max-width: 550px!important; }
         @media (max-width: 640px) { .video-wrapper { max-width: 100%; } }
         @media (max-height: 700px) { .video-wrapper { max-width: 520px; } }
-        .filter-item { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; touch-action:manipulation; flex-shrink: 0; -webkit-tap-highlight-color:transparent; }
+        .filter-item { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; flex-shrink: 0; }
         .filter-thumb-cam {
           width: 40px; height: 40px; border-radius: 10px; overflow: hidden;
           border: 2px solid #EDEAE4; transition: border-color 0.15s, transform 0.15s;
+          background: #1a1a1a;
         }
         .filter-thumb-cam.active {
           border-color: #1a1a1a;
@@ -371,26 +357,6 @@ const CameraCapture = ({ selectedFrame, photoSlots, photos: initialPhotos, onPho
         }
         .flip-btn:hover { transform: scale(1.08) rotate(15deg); box-shadow: 0 8px 20px rgba(0,0,0,0.12); }
         .flip-btn:active { transform: scale(0.95) rotate(180deg); }
-        .filter-strip {
-          display: flex;
-          display:flex;
-          gap: 0.5rem;
-          padding: 2px 0.5rem 6px;
-          width: 100%;
-          max-width: 550px;
-          overflow-x: auto;
-          -webkit-overflow-scrolling: touch;
-          scrollbar-width: none;
-          -ms-overflow-style: none;
-          box-sizing: border-box;
-        }
-        .filter-strip::-webkit-scrollbar { display: none; }
-        @media (max-width: 480px) {
-          .filter-strip { justify-content: flex-start; }
-        }
-        @media (min-width: 481px) {
-          .filter-strip { justify-content: center; flex-wrap: wrap; overflow-x: visible; }
-        }
       `}</style>
 
       <div className="blob" style={{ width: 360, height: 360, background: 'rgba(255,194,194,0.3)', top: '-8%', right: '0%', filter: 'blur(75px)' }} />
@@ -515,12 +481,24 @@ const CameraCapture = ({ selectedFrame, photoSlots, photos: initialPhotos, onPho
           })}
         </div>
 
-        {/* Filter strip — scrollable on mobile, wrapped on desktop */}
-        <div className="filter-strip">
+        {/* Filter strip — always color swatches, never photo preview */}
+        <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', padding: '2px 0 6px', width: '100%', maxWidth: '550px', justifyContent: 'center', scrollbarWidth: 'none' }}>
           {FILTERS.map(f => (
-            <div key={f.name} className="filter-item" onTouchStart={() => handleFilterSelect(f.name)} onClick={() => handleFilterSelect(f.name)}>
+            <div key={f.name} className="filter-item" onClick={() => setSelectedFilter(f.name)}>
               <div className={`filter-thumb-cam${selectedFilter === f.name ? ' active' : ''}`}>
-                <div style={{ width: '100%', height: '100%', background: FILTER_SWATCHES[f.name] ?? '#d8d2ca' }} />
+                <div style={{
+                  width: '100%', height: '100%',
+                  background:
+                    f.name === 'mono'    ? '#888'    :
+                    f.name === 'warm'    ? '#c4956a' :
+                    f.name === 'vintage' ? '#b09070' :
+                    f.name === 'drama'   ? '#222'    :
+                    f.name === 'vivid'   ? '#e05080' :
+                    f.name === 'fade'    ? '#c8c0b8' :
+                    f.name === 'soft'    ? '#f2c4b8' :
+                    f.name === 'glow'    ? '#ffe0cc' :
+                    '#d8d2ca',
+                }} />
               </div>
               <span className={`filter-label${selectedFilter === f.name ? ' active' : ''}`}>{f.label}</span>
             </div>
