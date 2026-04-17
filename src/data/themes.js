@@ -71,11 +71,11 @@ export const themes = [
     emoji: '💿',
     description: 'cyber chaos, glitter overload, ultimate 2000s nostalgia',
     frames: [
-      { id: 's1', name: 'Soft Cyber', slots: 4, frameUrl: '/frames/simple1.png' },
-      { id: 's2', name: 'Mean Girls Core', slots: 4, frameUrl: '/frames/simple2.png' },
-      { id: 's3', name: 'Frutiger Aero', slots: 4, frameUrl: '/frames/simple3.png' },
-      { id: 's4', name: 'Kidcore Digital', slots: 4, frameUrl: '/frames/simple4.png' },
-      { id: 's5', name: 'Lo-fi Purple', slots: 4, frameUrl: '/frames/simple5.png' }
+      { id: 's1', name: 'Deep Blue Night', slots: 4, frameUrl: '/frames/simple1.png' },
+      { id: 's2', name: 'Midnight Clouds', slots: 4, frameUrl: '/frames/simple2.png' },
+      { id: 's3', name: 'Noir Select', slots: 4, frameUrl: '/frames/simple3.png' },
+      { id: 's4', name: 'Static Mist', slots: 4, frameUrl: '/frames/simple4.png' },
+      { id: 's5', name: 'Stellar Onyx', slots: 4, frameUrl: '/frames/simple5.png' }
     ]
   }
 ];
