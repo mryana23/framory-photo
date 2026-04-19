@@ -696,7 +696,7 @@ export default function LandingPage({ onSelectTheme }) {
           justifyContent: "center",
         }}
       >
-        {/* Blobs — exact original */}
+        {/* Blobs */}
         <div
           style={{
             position: "absolute",

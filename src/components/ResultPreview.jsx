@@ -32,14 +32,14 @@ const ResultPreview = ({ frameImage, photos, photoSlots, selectedFilter = 'none'
 
   const getCaption = () => {
     const captions = [
-      `📸 just did a photo booth session and i am NOT okay\n\nthe themes?? the frames?? everything is so cute\n\nmade with framory — free, no account needed\nhttps://framory-photo.vercel.app/`,
-      `🎬 main character moment fully unlocked\n\n4 shots. one vibe. zero effort.\n\nphoto booth strip via framory →\nhttps://framory-photo.vercel.app/`,
-      `ok so i found this photo booth app and it's genuinely so good 😭\n\ncurated themes, instant download, completely free\nno signup, no drama, just vibes\n\nhttps://framory-photo.vercel.app/`,
-      `✨ hot girl/boy/bestie activity of the day:\n\n1. open framory\n2. pick a theme that matches your era\n3. strike 4 poses\n4. download & post before you even blink\n\ncompletely free btw → https://framory-photo.vercel.app/`,
-      `🌙 not me at 2am doing photo booth sessions like i don't have things to do tomorrow\n\nbut framory said free and no signup so here we are\n\nhttps://framory-photo.vercel.app/`,
-      `soft life era 🌸 good lighting era ✨ framory era\n\njust made the cutest photo strip — took like 2 minutes\nfree forever, no account, instant download\n\nhttps://framory-photo.vercel.app/`,
-      `this is your sign to stop scrolling and make a photo strip 📷\n\npick a vibe → take 4 shots → download instantly\nit's free and actually so fun\n\nframory → https://framory-photo.vercel.app/`,
-      `🎞️ i am fully in my photo booth era and i have zero regrets\n\nframory has the cutest themes and it takes literally 2 minutes\nfree, no account, just good photos\n\nhttps://framory-photo.vercel.app/`,
+      `📸 A simple web-based photo booth tool. Capture 4 shots with curated minimalist frames and download the result instantly. No account registration required.\n\nTry it here: https://framory-photo.vercel.app/`,
+      `🎞️ Quick photo strip generator. This tool offers high-performance single-page processing with various aesthetic themes. 4 poses, one click download, completely free.\n\nLink: https://framory-photo.vercel.app/`,
+      `A functional photo booth for your browser. It features a clean interface, multiple filter options, and instant high-quality downloads without any signup barriers.\n\nAccess the tool: https://framory-photo.vercel.app/`,
+      `✨ Digital photo booth with a focus on simplicity. Choose a theme, strike 4 poses, and get your photo strip immediately. No data collection, just a straightforward creative tool.\n\nAvailable at: https://framory-photo.vercel.app/`,
+      `Capture and download 4-frame photo strips directly from your browser. Features include real-time filters, mobile-friendly interface, and zero-latency processing.\n\nTry Framory: https://framory-photo.vercel.app/`,
+      `📸 Minimalist photo booth strip creator. Designed for speed and ease of use—no login needed, curated frame aesthetics, and instant local saving.\n\nCheck it out: https://framory-photo.vercel.app/`,
+      `An efficient way to create photo booth strips. Select from various modern themes, take 4 shots, and export your image instantly in high resolution.\n\nFree to use: https://framory-photo.vercel.app/`,
+      `🎞️ A browser-based tool for quick photo sessions. It provides an accessible interface with professional filters and high-quality frame layouts for immediate use.\n\nLink: https://framory-photo.vercel.app/`,
     ];
     return captions[Math.floor(Math.random() * captions.length)];
   };
@@ -56,7 +56,6 @@ const ResultPreview = ({ frameImage, photos, photoSlots, selectedFilter = 'none'
     canvas.height = frame.height;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Resolve active filter CSS string
     const activeFilter = FILTERS.find(f => f.name === selectedFilter);
     const filterCss = activeFilter?.css !== 'none' ? activeFilter?.css : 'none';
 
@@ -92,12 +91,10 @@ const ResultPreview = ({ frameImage, photos, photoSlots, selectedFilter = 'none'
       ctx.rect(clipX, clipY, clipW, clipH);
       ctx.clip();
 
-      // Apply base CSS filter
       ctx.filter = filterCss;
       ctx.drawImage(img, srcX, srcY, srcW, srcH, clipX, clipY, clipW, clipH);
       ctx.filter = 'none';
 
-      // For soft/glow: composite a blurred layer to simulate skin-smoothing
       if (activeFilter?.overlay) {
         const { blur, opacity } = activeFilter.overlay;
         const offscreen = document.createElement('canvas');

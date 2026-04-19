@@ -98,7 +98,6 @@ const CameraCapture = ({ selectedFrame, photoSlots, photos: initialPhotos, onPho
     const activeFilter = FILTERS.find(f => f.name === selectedFilter);
     const isMirrored = facingMode === 'user';
 
-    // Draw video with base CSS filter
     context.filter = activeFilter?.css !== 'none' ? activeFilter.css : 'none';
     if (isMirrored) {
       context.save();
@@ -110,7 +109,6 @@ const CameraCapture = ({ selectedFrame, photoSlots, photos: initialPhotos, onPho
     }
     context.filter = 'none';
 
-    // For soft/glow: composite a blurred layer on top to simulate skin-smoothing
     if (activeFilter?.overlay) {
       const { blur, opacity } = activeFilter.overlay;
       const offscreen = document.createElement('canvas');
@@ -426,7 +424,7 @@ const CameraCapture = ({ selectedFrame, photoSlots, photos: initialPhotos, onPho
               }} />
             )}
 
-            {/* Flip camera button — pojok kanan atas */}
+            {/* Flip camera button */}
             <button
               className="flip-btn"
               onClick={handleFlipCamera}
@@ -479,8 +477,8 @@ const CameraCapture = ({ selectedFrame, photoSlots, photos: initialPhotos, onPho
           })}
         </div>
 
-        {/* Filter strip — always color swatches, never photo preview */}
-        <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', padding: '2px 0 6px', width: '100%', maxWidth: '550px', justifyContent: 'center', scrollbarWidth: 'none' }}>
+        {/* Filter strip — FIX: added position relative + zIndex 10 so overlay blur doesn't block clicks */}
+        <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', padding: '2px 0 6px', width: '100%', maxWidth: '550px', justifyContent: 'center', scrollbarWidth: 'none', position: 'relative', zIndex: 10 }}>
           {FILTERS.map(f => (
             <div key={f.name} className="filter-item" onClick={() => setSelectedFilter(f.name)}>
               <div className={`filter-thumb-cam${selectedFilter === f.name ? ' active' : ''}`}>

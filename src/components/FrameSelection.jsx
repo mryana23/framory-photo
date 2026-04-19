@@ -156,12 +156,12 @@ const FrameSelection = ({ selectedTheme, onBack, onSelectFrame }) => {
         }
       `}</style>
 
-      {/* Soft ambient blobs — same as landing page hero */}
+      {/* Soft ambient blobs */}
       <div className="blob" style={{ width: 400, height: 400, background: 'rgba(255,194,194,0.32)', top: '-5%', right: '2%', filter: 'blur(80px)' }} />
       <div className="blob" style={{ width: 280, height: 280, background: 'rgba(168,222,192,0.28)', top: '50%', right: '20%', filter: 'blur(60px)' }} />
       <div className="blob" style={{ width: 220, height: 220, background: 'rgba(196,179,255,0.22)', bottom: '10%', left: '5%', filter: 'blur(55px)' }} />
 
-      {/* Dot grid — top right corner, same as hero */}
+      {/* Dot grid */}
       <div style={{
         position: 'fixed', top: '2rem', right: 0, width: '220px', height: '220px', opacity: 0.18,
         backgroundImage: 'radial-gradient(circle, #D8D2CA 1px, transparent 1px)',
